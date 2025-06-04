@@ -9,8 +9,7 @@ export class DatabaseService {
   constructor() {
     this.client = new CosmosClient({
       endpoint: config.azure.cosmosDb.endpoint,
-      key: config.azure.cosmosDb.key,
-      connectionPolicy: config.azure.cosmosDb.connectionOptions
+      key: config.azure.cosmosDb.key
     });
   }
 
@@ -61,9 +60,12 @@ export class DatabaseService {
     try {
       const containerDefinition: ContainerDefinition = {
         id: containerConfig.id,
-        partitionKey: containerConfig.partitionKey,
-        defaultTtl: containerConfig.defaultTtl
+        partitionKey: { paths: [containerConfig.partitionKey] }
       };
+
+      if (containerConfig.defaultTtl !== undefined) {
+        containerDefinition.defaultTtl = containerConfig.defaultTtl;
+      }
 
       const { container } = await this.database.containers.createIfNotExists(
         containerDefinition,

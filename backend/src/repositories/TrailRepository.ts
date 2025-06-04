@@ -14,7 +14,18 @@ export class TrailRepository extends BaseRepository<Trail> {
     const trailInput = {
       ...input,
       partitionKey: input.location.region, // Use region as partition key for location-based queries
-      elevationProfile: input.elevationProfile || [],
+      location: {
+        ...input.location,
+        coordinates: {
+          start: input.location.coordinates.start,
+          end: input.location.coordinates.end,
+          waypoints: input.location.coordinates.waypoints || []
+        }
+      },
+      characteristics: {
+        ...input.characteristics,
+        elevationProfile: input.characteristics.elevationProfile || []
+      },
       features: {
         ...input.features,
         wildlife: input.features.wildlife || []
@@ -252,7 +263,7 @@ export class TrailRepository extends BaseRepository<Trail> {
 
     // Update rating breakdown
     const breakdown = { ...trail.ratings.breakdown };
-    const ratingKey = Math.round(newRating).toString();
+    const ratingKey = Math.round(newRating);
     breakdown[ratingKey] = (breakdown[ratingKey] || 0) + 1;
 
     const updatedRatings = {

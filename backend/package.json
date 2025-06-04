@@ -9,9 +9,12 @@
     "start": "node dist/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:db": "ts-node src/scripts/testDatabase.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "seed": "ts-node src/scripts/seedData.ts"
+    "seed": "ts-node src/scripts/seedData.ts",
+    "validate": "ts-node src/scripts/seedData.ts --validate",
+    "stats": "ts-node src/scripts/seedData.ts --stats"
   },
   "keywords": [
     "hiking",

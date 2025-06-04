@@ -181,7 +181,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     try {
       const countQuerySpec: SqlQuerySpec = {
         query: `SELECT VALUE COUNT(1) FROM (${querySpec.query})`,
-        parameters: querySpec.parameters
+        parameters: querySpec.parameters || []
       };
 
       const queryOptions = {

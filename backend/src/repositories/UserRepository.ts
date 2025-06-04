@@ -38,7 +38,7 @@ export class UserRepository extends BaseRepository<UserProfile> {
   /**
    * Update user profile
    */
-  async updateUser(userId: string, email: string, updates: UpdateUserProfileInput): Promise<UserProfile> {
+  async updateUser(userId: string, email: string, updates: Partial<UserProfile>): Promise<UserProfile> {
     return this.update(userId, email, updates);
   }
 
