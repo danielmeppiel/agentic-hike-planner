@@ -7,7 +7,11 @@
     "dev": "npx ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "echo \"Tests will be added in future iterations\" && exit 0"
+    "test": "echo \"Tests will be added in future iterations\" && exit 0",
+    "setup:cosmos": "node ../infrastructure/scripts/setup-cosmos.js",
+    "health:check": "node ../infrastructure/scripts/health-check.js",
+    "seed:data": "node ../infrastructure/scripts/setup-cosmos.js --seed",
+    "db:cli": "npx ts-node db-cli.ts"
   },
   "keywords": [
     "hiking",

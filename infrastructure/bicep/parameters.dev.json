@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "cosmosAccountName": {
+      "value": "cosmos-hike-planner-dev"
+    },
+    "databaseName": {
+      "value": "HikePlannerDB"
+    },
+    "minThroughput": {
+      "value": 400
+    },
+    "maxThroughput": {
+      "value": 1000
+    }
+  }
+}

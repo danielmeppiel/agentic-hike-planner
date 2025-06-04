@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-06-04T12:04:33.190Z",
+  "environment": "development",
+  "tests": {
+    "environment": false,
+    "connection": false,
+    "containers": false,
+    "repositories": false,
+    "performance": false
+  },
+  "overallHealth": "unhealthy"
+}
