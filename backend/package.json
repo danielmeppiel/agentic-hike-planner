@@ -1,0 +1,54 @@
+{
+  "name": "agentic-hike-planner-backend",
+  "version": "1.0.0",
+  "description": "Backend API and database services for Agentic Hike Planner",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "seed": "ts-node src/scripts/seedData.ts"
+  },
+  "keywords": [
+    "hiking",
+    "trip-planning",
+    "azure",
+    "cosmos-db",
+    "typescript"
+  ],
+  "author": "Agentic Hike Planner Team",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/cosmos": "^4.1.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/morgan": "^1.9.9",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.5.2",
+    "ts-node": "^10.9.2",
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
