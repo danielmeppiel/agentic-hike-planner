@@ -2,11 +2,151 @@ import { Container, SqlQuerySpec } from '@azure/cosmos';
 import { BaseRepository } from './BaseRepository';
 import { AIRecommendation, GenerateRecommendationRequest, RecommendationFeedback } from '../types';
 
+/**
+ * Repository for managing AI-generated recommendations with automatic expiration.
+ * 
+ * ## Partition Key Strategy
+ * 
+ * Uses **userId as partition key** for user-centric recommendation access:
+ * - All user recommendations are co-located for efficient queries
+ * - Supports user-scoped recommendation management
+ * - Enables personalization features within single partitions
+ * - Aligns with user journey and experience patterns
+ * 
+ * ## Time-To-Live (TTL) Strategy
+ * 
+ * Implements automatic data lifecycle management:
+ * ```json
+ * {
+ *   "defaultTtl": 2592000,  // 30 days in seconds
+ *   "ttlPropertyPath": "/expiresAt"
+ * }
+ * ```
+ * 
+ * ### TTL Benefits
+ * - **Automatic cleanup**: Expired recommendations are automatically deleted
+ * - **Cost optimization**: Reduces storage costs for stale data
+ * - **Privacy compliance**: Ensures temporary data doesn't persist indefinitely
+ * - **Performance maintenance**: Keeps working set size manageable
+ * 
+ * ### TTL Implementation Patterns
+ * - Set `expiresAt` field to Unix timestamp for custom expiration
+ * - Use null/undefined `expiresAt` to prevent automatic deletion
+ * - Container-level TTL as fallback for documents without explicit expiration
+ * - Monitor TTL effectiveness through Cosmos DB metrics
+ * 
+ * ## Indexing Strategy
+ * 
+ * Optimized for recommendation retrieval and analysis:
+ * ```json
+ * {
+ *   "indexingPolicy": {
+ *     "includedPaths": [
+ *       { "path": "/userId/?" },        // Hash index for user filtering
+ *       { "path": "/tripId/?" },        // Hash index for trip-specific recommendations
+ *       { "path": "/confidence/?" },    // Range index for quality sorting
+ *       { "path": "/createdAt/?" },     // Range index for temporal queries
+ *       { "path": "/expiresAt/?" },     // Range index for TTL queries
+ *       { "path": "/type/?" },          // Hash index for recommendation categorization
+ *       { "path": "/feedback/rating/?" } // Range index for effectiveness analysis
+ *     ]
+ *   }
+ * }
+ * ```
+ * 
+ * ## Recommendation Lifecycle
+ * 
+ * ```
+ * AI Generation → Storage → User Interaction → Feedback → Expiration
+ *       ↓            ↓           ↓             ↓           ↓
+ *   Algorithm     Database    UI Display   Analytics   Auto-Delete
+ *   Processing    Insert      & Actions    Collection   (TTL)
+ * ```
+ * 
+ * ## Machine Learning Integration Patterns
+ * 
+ * ### Recommendation Quality Tracking
+ * - Confidence scores from ML models
+ * - User feedback collection (rating, usefulness)
+ * - Click-through and conversion tracking
+ * - A/B testing support for algorithm improvements
+ * 
+ * ### Personalization Features
+ * - User preference learning from interactions
+ * - Contextual recommendations based on trip data
+ * - Seasonal and temporal relevance adjustments
+ * - Social and collaborative filtering integration
+ * 
+ * @example
+ * ```typescript
+ * const recommendationRepository = new RecommendationRepository(container);
+ * 
+ * // Create AI recommendation with TTL
+ * const recommendation = await recommendationRepository.create({
+ *   userId: 'user-789',
+ *   tripId: 'trip-456', 
+ *   type: 'trail-suggestion',
+ *   content: {
+ *     recommendations: [
+ *       { trailId: 'trail-123', score: 0.95, reason: 'Perfect difficulty match' }
+ *     ]
+ *   },
+ *   confidence: 0.87,
+ *   source: 'ml-recommendation-engine-v2',
+ *   expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+ * });
+ * 
+ * // Efficient user recommendation queries (single-partition)
+ * const userRecs = await recommendationRepository.findByUserId('user-789');
+ * const tripRecs = await recommendationRepository.findByTripId('trip-456', 'user-789');
+ * ```
+ */
 export class RecommendationRepository extends BaseRepository<AIRecommendation> {
+  /**
+   * Initializes the RecommendationRepository with the specified Cosmos DB container.
+   * 
+   * @param container - The Cosmos DB container configured for AI recommendations with TTL
+   */
   constructor(container: Container) {
     super(container);
   }
 
+  /**
+   * Creates a new AI recommendation with automatic TTL management.
+   * 
+   * ## TTL Implementation
+   * - Sets partition key to userId for efficient user-scoped queries
+   * - Inherits automatic expiration from container TTL (30 days default)
+   * - Custom expiration can be set via expiresAt field
+   * - Automatic cleanup reduces storage costs and maintains data freshness
+   * 
+   * ## Recommendation Metadata
+   * - Confidence scores for ML model evaluation
+   * - Source tracking for algorithm attribution
+   * - Structured content for flexible recommendation types
+   * - Trip association for contextual relevance
+   * 
+   * @param recommendationData - AI recommendation data without system-generated fields
+   * @returns Promise resolving to the created recommendation with TTL
+   * @throws Error if recommendation creation fails
+   * 
+   * @example
+   * ```typescript
+   * const weatherRec = await recommendationRepository.create({
+   *   userId: 'user-123',
+   *   tripId: 'trip-456',
+   *   type: 'weather-advisory',
+   *   content: {
+   *     message: 'Rain expected on day 3, consider waterproof gear',
+   *     priority: 'high',
+   *     actionable: true
+   *   },
+   *   confidence: 0.92,
+   *   source: 'weather-ai-v1',
+   *   expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
+   * });
+   * ```
+   */
   async create(recommendationData: Omit<AIRecommendation, 'id' | 'partitionKey' | 'createdAt' | 'updatedAt'>): Promise<AIRecommendation> {
     const recommendationDocument = {
       ...recommendationData,
@@ -16,6 +156,53 @@ export class RecommendationRepository extends BaseRepository<AIRecommendation> {
     return await super.create(recommendationDocument);
   }
 
+  /**
+   * Retrieves active (non-expired) recommendations for a specific user.
+   * 
+   * ## TTL-Aware Query Pattern
+   * 
+   * Automatically filters out expired recommendations:
+   * ```sql
+   * SELECT * FROM c 
+   * WHERE c.userId = @userId 
+   * AND c.expiresAt > @now 
+   * ORDER BY c.createdAt DESC
+   * ```
+   * 
+   * ## Single-Partition Efficiency
+   * - Uses userId as partition key for optimal performance
+   * - No cross-partition scanning required
+   * - Minimal RU consumption for user's recommendations
+   * - Consistent low latency for personalized experiences
+   * 
+   * ## Expiration Handling
+   * - Only returns recommendations that haven't reached expiresAt timestamp
+   * - Expired recommendations remain until TTL cleanup (up to container TTL)
+   * - Consider manual cleanup for immediate consistency if needed
+   * 
+   * @param userId - The user ID to retrieve recommendations for
+   * @param limit - Maximum number of recommendations per page (default: 20)
+   * @param continuationToken - Token from previous page for pagination
+   * @returns Promise resolving to paginated active recommendations
+   * @throws Error if query execution fails
+   * 
+   * @example
+   * ```typescript
+   * // Get user's current recommendations
+   * const activeRecs = await recommendationRepository.findByUserId('user-123');
+   * 
+   * // Process recommendations by type
+   * const groupedRecs = activeRecs.recommendations.reduce((groups, rec) => {
+   *   const type = rec.type;
+   *   groups[type] = groups[type] || [];
+   *   groups[type].push(rec);
+   *   return groups;
+   * }, {});
+   * 
+   * console.log(`Trail suggestions: ${groupedRecs['trail-suggestion']?.length || 0}`);
+   * console.log(`Weather advisories: ${groupedRecs['weather-advisory']?.length || 0}`);
+   * ```
+   */
   async findByUserId(userId: string, limit: number = 20, continuationToken?: string): Promise<{
     recommendations: AIRecommendation[];
     continuationToken?: string;

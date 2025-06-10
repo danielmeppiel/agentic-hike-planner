@@ -2,11 +2,126 @@ import { Container, SqlQuerySpec } from '@azure/cosmos';
 import { BaseRepository } from './BaseRepository';
 import { TripPlan, CreateTripRequest, UpdateTripRequest, TripStatus } from '../types';
 
+/**
+ * Repository for managing trip plans and itineraries with Cosmos DB.
+ * 
+ * ## Partition Key Strategy
+ * 
+ * Uses **userId as partition key** for user-centric data access:
+ * - All trips for a user are co-located in the same logical partition
+ * - Enables highly efficient single-partition queries for user's trips
+ * - Supports user-scoped operations with minimal RU consumption
+ * - Aligns with typical access patterns (users manage their own trips)
+ * 
+ * ## Indexing Strategy
+ * 
+ * Optimized for common trip management scenarios:
+ * ```json
+ * {
+ *   "indexingPolicy": {
+ *     "includedPaths": [
+ *       { "path": "/userId/?" },          // Hash index for user filtering
+ *       { "path": "/status/?" },          // Hash index for status filtering  
+ *       { "path": "/dates/startDate/?" }, // Range index for date queries
+ *       { "path": "/dates/endDate/?" },   // Range index for date ranges
+ *       { "path": "/location/region/?" }, // Range index for geographic queries
+ *       { "path": "/createdAt/?" }        // Range index for temporal sorting
+ *     ]
+ *   }
+ * }
+ * ```
+ * 
+ * ## Query Performance Patterns
+ * 
+ * ### Single-Partition Queries (Highly Efficient)
+ * - User's trip list: `WHERE c.userId = @userId`
+ * - User's trips by status: `WHERE c.userId = @userId AND c.status = @status`
+ * - User's upcoming trips: `WHERE c.userId = @userId AND c.dates.startDate > @now`
+ * 
+ * ### Cross-Partition Queries (Use Sparingly)
+ * - All trips by status: `WHERE c.status = @status`
+ * - Trips in date range: `WHERE c.dates.startDate BETWEEN @start AND @end`
+ * - Regional trip analysis: `WHERE c.location.region = @region`
+ * 
+ * ## Trip Lifecycle Management
+ * 
+ * Trip status transitions:
+ * ```
+ * planning → confirmed → completed
+ *     ↓         ↓
+ * cancelled   cancelled
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * const tripRepository = new TripRepository(container);
+ * 
+ * // Create user's trip (single-partition)
+ * const trip = await tripRepository.create({
+ *   userId: 'user-123',
+ *   title: 'Cascade Mountains Adventure',
+ *   location: { region: 'pacific-northwest' },
+ *   dates: { startDate: '2024-07-15', endDate: '2024-07-20' }
+ * });
+ * 
+ * // Efficient user trip queries
+ * const userTrips = await tripRepository.findByUserId('user-123');
+ * const upcomingTrips = await tripRepository.findUpcomingTrips('user-123');
+ * ```
+ */
 export class TripRepository extends BaseRepository<TripPlan> {
+  /**
+   * Initializes the TripRepository with the specified Cosmos DB container.
+   * 
+   * @param container - The Cosmos DB container configured for trip plans
+   */
   constructor(container: Container) {
     super(container);
   }
 
+  /**
+   * Creates a new trip plan with user-specific initialization.
+   * 
+   * ## Trip Initialization Strategy
+   * - Sets partition key to userId for optimal data locality
+   * - Initializes trip status to 'planning' for new trips
+   * - Creates empty arrays for selectedTrails and equipment 
+   * - Provides default budget structure if not specified
+   * - Inherits automatic ID generation and timestamps from BaseRepository
+   * 
+   * ## Business Logic
+   * - New trips always start in 'planning' status
+   * - Budget defaults to $0 USD without accommodation
+   * - Equipment and trail lists start empty for user population
+   * - Consider validation for date ranges and location data
+   * 
+   * @param tripData - Trip creation data including userId for partition key
+   * @returns Promise resolving to the created trip plan with all fields
+   * @throws Error if trip creation fails or validation errors occur
+   * 
+   * @example
+   * ```typescript
+   * const newTrip = await tripRepository.create({
+   *   userId: 'user-456',
+   *   title: 'Olympic National Park Circuit',
+   *   description: 'Multi-day hiking adventure through temperate rainforest',
+   *   location: {
+   *     region: 'pacific-northwest',
+   *     country: 'USA',
+   *     coordinates: { latitude: 47.8, longitude: -123.6 }
+   *   },
+   *   dates: {
+   *     startDate: '2024-08-10',
+   *     endDate: '2024-08-17'
+   *   },
+   *   budget: {
+   *     amount: 1200,
+   *     currency: 'USD', 
+   *     includesAccommodation: true
+   *   }
+   * });
+   * ```
+   */
   async create(tripData: CreateTripRequest & { userId: string }): Promise<TripPlan> {
     const tripDocument = {
       ...tripData,
