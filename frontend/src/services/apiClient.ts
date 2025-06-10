@@ -1,5 +1,30 @@
 import axios from 'axios';
 
+/**
+ * Pre-configured Axios client for API requests.
+ * Includes automatic authentication, request/response interceptors,
+ * and token refresh functionality.
+ * 
+ * Features:
+ * - Automatic Bearer token authentication from localStorage
+ * - Token refresh on 401 responses
+ * - Automatic logout on refresh failure
+ * - 10-second request timeout
+ * 
+ * @example
+ * ```typescript
+ * import { apiClient } from './apiClient';
+ * 
+ * // GET request
+ * const response = await apiClient.get('/trails');
+ * 
+ * // POST request with data
+ * const newTrip = await apiClient.post('/trips', tripData);
+ * 
+ * // PUT request
+ * const updatedTrip = await apiClient.put(`/trips/${id}`, updates);
+ * ```
+ */
 const apiClient = axios.create({
   baseURL: '/api',
   timeout: 10000,

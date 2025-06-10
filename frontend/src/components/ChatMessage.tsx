@@ -4,9 +4,31 @@ import type { Message } from '../types';
 import { formatTimeString } from '../utils';
 
 interface ChatMessageProps {
+  /** The message object to display */
   message: Message;
 }
 
+/**
+ * Individual chat message component that displays messages from users or AI.
+ * Handles different message types (text, action) and provides appropriate styling
+ * and avatars for each sender type.
+ * 
+ * @param props - Component props
+ * @param props.message - Message object containing content, sender, timestamp, and type
+ * 
+ * @example
+ * ```tsx
+ * const message = {
+ *   id: '1',
+ *   content: 'Hello, can you help me find trails?',
+ *   sender: 'user',
+ *   timestamp: new Date(),
+ *   type: 'text'
+ * };
+ * 
+ * <ChatMessage message={message} />
+ * ```
+ */
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.sender === 'user';
   const isAction = message.type === 'action';

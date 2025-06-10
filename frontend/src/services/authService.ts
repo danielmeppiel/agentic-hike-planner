@@ -1,7 +1,32 @@
 import { apiClient } from './apiClient';
 import type { UserProfile, LoginCredentials } from '../types';
 
+/**
+ * Authentication service for user login, logout, and profile management.
+ * Handles token storage, API communication, and includes fallback mock data.
+ */
 export const authService = {
+  /**
+   * Authenticates a user with email and password.
+   * Stores the authentication token in localStorage on success.
+   * Falls back to mock user data if API call fails.
+   * 
+   * @param credentials - User login credentials (email and password)
+   * @returns Promise resolving to the authenticated user's profile
+   * 
+   * @example
+   * ```typescript
+   * try {
+   *   const user = await authService.login({
+   *     email: 'user@example.com',
+   *     password: 'password123'
+   *   });
+   *   console.log('Logged in as:', user.name);
+   * } catch (error) {
+   *   console.error('Login failed:', error);
+   * }
+   * ```
+   */
   async login(credentials: LoginCredentials): Promise<UserProfile> {
     try {
       const { data } = await apiClient.post('/auth/login', credentials);
@@ -28,6 +53,16 @@ export const authService = {
     }
   },
 
+  /**
+   * Logs out the current user and clears authentication data.
+   * Removes the authentication token from localStorage regardless of API response.
+   * 
+   * @example
+   * ```typescript
+   * await authService.logout();
+   * // User is now logged out, token removed
+   * ```
+   */
   async logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout');
@@ -38,6 +73,22 @@ export const authService = {
     }
   },
 
+  /**
+   * Retrieves the current user's profile if authenticated.
+   * Returns null if no authentication token exists or API call fails.
+   * 
+   * @returns Promise resolving to user profile or null if not authenticated
+   * 
+   * @example
+   * ```typescript
+   * const currentUser = await authService.getCurrentUser();
+   * if (currentUser) {
+   *   console.log('Current user:', currentUser.name);
+   * } else {
+   *   console.log('No user logged in');
+   * }
+   * ```
+   */
   async getCurrentUser(): Promise<UserProfile | null> {
     // Check if token exists before making the API call
     const token = localStorage.getItem('auth-token');
@@ -57,6 +108,23 @@ export const authService = {
     }
   },
 
+  /**
+   * Updates the current user's profile information.
+   * 
+   * @param profile - Partial user profile with fields to update
+   * @returns Promise resolving to the updated user profile
+   * 
+   * @example
+   * ```typescript
+   * const updatedUser = await authService.updateProfile({
+   *   name: 'Jane Doe',
+   *   preferences: {
+   *     difficultyLevel: 'advanced',
+   *     maxDistance: 15
+   *   }
+   * });
+   * ```
+   */
   async updateProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
     try {
       const { data } = await apiClient.put('/user/profile', profile);
@@ -67,6 +135,22 @@ export const authService = {
     }
   },
 
+  /**
+   * Refreshes the authentication token.
+   * Updates localStorage with the new token on success.
+   * 
+   * @returns Promise resolving to the new token or null if refresh failed
+   * 
+   * @example
+   * ```typescript
+   * const newToken = await authService.refreshToken();
+   * if (newToken) {
+   *   console.log('Token refreshed successfully');
+   * } else {
+   *   // Handle refresh failure, redirect to login
+   * }
+   * ```
+   */
   async refreshToken(): Promise<string | null> {
     try {
       const { data } = await apiClient.post('/auth/refresh');

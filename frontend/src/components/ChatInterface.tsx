@@ -8,6 +8,20 @@ import { TypingIndicator } from './TypingIndicator';
 import { useChatStore } from '../stores/chatStore';
 import type { Message } from '../types';
 
+/**
+ * Main chat interface component for the AI hiking assistant.
+ * Provides a full-screen chat experience with message history, typing indicators,
+ * quick actions, and conversation starters.
+ * 
+ * @example
+ * ```tsx
+ * import { ChatInterface } from './components/ChatInterface';
+ * 
+ * function App() {
+ *   return <ChatInterface />;
+ * }
+ * ```
+ */
 export function ChatInterface() {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);

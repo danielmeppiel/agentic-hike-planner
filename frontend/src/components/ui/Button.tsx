@@ -1,12 +1,53 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual style variant of the button */
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  /** Size of the button */
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Whether the button is in a loading state */
   isLoading?: boolean;
+  /** Optional icon to display in the button */
   icon?: React.ReactNode;
 }
 
+/**
+ * Reusable button component with multiple variants, sizes, and states.
+ * Supports loading states, icons, and follows design system patterns.
+ * 
+ * @param props - Component props extending standard button attributes
+ * @param props.variant - Visual style: 'primary', 'secondary', 'outline', or 'ghost'
+ * @param props.size - Button size: 'sm', 'md', 'lg', or 'xl'
+ * @param props.isLoading - Shows loading spinner when true
+ * @param props.icon - Optional React node to display as an icon
+ * @param props.children - Button content/text
+ * 
+ * @example
+ * ```tsx
+ * import { PlusIcon } from '@heroicons/react/24/outline';
+ * 
+ * function MyComponent() {
+ *   const [isLoading, setIsLoading] = useState(false);
+ * 
+ *   return (
+ *     <div>
+ *       <Button variant="primary" size="md">
+ *         Save Changes
+ *       </Button>
+ *       
+ *       <Button 
+ *         variant="outline" 
+ *         icon={<PlusIcon className="w-4 h-4" />}
+ *         isLoading={isLoading}
+ *         onClick={() => setIsLoading(true)}
+ *       >
+ *         Add Item
+ *       </Button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
