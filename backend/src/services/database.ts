@@ -2,12 +2,41 @@ import { CosmosClient, Database, Container, ContainerDefinition } from '@azure/c
 import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity';
 import { config } from '../config';
 
+/**
+ * Service responsible for managing Azure Cosmos DB connections and operations.
+ * Handles database initialization, container setup, and provides access to Cosmos DB resources.
+ * Supports both Azure AD authentication and access key authentication methods.
+ * 
+ * @example
+ * ```typescript
+ * const dbService = new DatabaseService();
+ * await dbService.initialize();
+ * const container = dbService.getContainer('trails');
+ * ```
+ */
 export class DatabaseService {
   private client: CosmosClient | null = null;
   private database: Database | null = null;
   private containers: Map<string, Container> = new Map();
   private isTestMode: boolean = false;
 
+  /**
+   * Creates a new DatabaseService instance and configures Azure Cosmos DB connection.
+   * Automatically detects authentication method (Azure AD or access key) based on configuration.
+   * 
+   * @param testMode - If true, creates a mock service for testing without actual Azure connections
+   * @throws Will throw an error if Azure Cosmos DB endpoint is not configured in non-test mode
+   * @throws Will throw an error if Azure AD authentication fails and no access key is provided
+   * 
+   * @example
+   * ```typescript
+   * // Production use
+   * const dbService = new DatabaseService();
+   * 
+   * // Testing use
+   * const testDbService = new DatabaseService(true);
+   * ```
+   */
   constructor(testMode: boolean = false) {
     this.isTestMode = testMode;
     
@@ -26,18 +55,8 @@ export class DatabaseService {
       } else {
         // Use Azure AD authentication with DefaultAzureCredential
         try {
-          // Configure DefaultAzureCredential with options to support local development
-          const credential = new DefaultAzureCredential({
-            // These options help with local development authentication
-            managedIdentityClientId: process.env.AZURE_CLIENT_ID,
-            excludeAzureCliCredential: false,
-            excludeVisualStudioCodeCredential: false,
-            excludeEnvironmentCredential: false,
-            excludeManagedIdentityCredential: false,
-            // These are less useful for local development
-            excludeInteractiveBrowserCredential: true,
-            excludeSharedTokenCacheCredential: true,
-          });
+          // Configure DefaultAzureCredential for authentication
+          const credential = new DefaultAzureCredential();
           
           this.client = new CosmosClient({
             endpoint: config.azure.cosmosDb.endpoint,
@@ -53,6 +72,20 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Initializes the database service by creating the database and setting up containers.
+   * Must be called before using any other database operations.
+   * 
+   * @returns Promise<void>
+   * @throws Will throw an error if database creation or container setup fails
+   * 
+   * @example
+   * ```typescript
+   * const dbService = new DatabaseService();
+   * await dbService.initialize();
+   * // Database and containers are now ready for use
+   * ```
+   */
   async initialize(): Promise<void> {
     if (this.isTestMode) {
       console.log('Database service running in test mode - skipping actual initialization');
@@ -79,6 +112,20 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Sets up all required Cosmos DB containers with their schemas and indexing policies.
+   * Creates containers for users, trips, trails, and recommendations with optimized indexing.
+   * 
+   * @private
+   * @returns Promise<void>
+   * @throws Will throw an error if any container creation fails
+   * 
+   * Container schemas:
+   * - users: User profiles with indexing on email, fitnessLevel, location
+   * - trips: Trip plans with indexing on userId, status, dates, location
+   * - trails: Trail data with indexing on difficulty, distance, ratings, location
+   * - recommendations: AI recommendations with TTL of 30 days
+   */
   private async setupContainers(): Promise<void> {
     if (!this.database) {
       throw new Error('Database not initialized');
@@ -158,6 +205,20 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Retrieves a Cosmos DB container by name for data operations.
+   * Returns a mock container in test mode for unit testing.
+   * 
+   * @param containerName - Name of the container to retrieve ('users', 'trips', 'trails', 'recommendations')
+   * @returns Container instance for data operations
+   * @throws Will throw an error if container is not found or database is not initialized
+   * 
+   * @example
+   * ```typescript
+   * const trailsContainer = dbService.getContainer('trails');
+   * const result = await trailsContainer.items.query('SELECT * FROM c').fetchAll();
+   * ```
+   */
   getContainer(containerName: string): Container {
     if (this.isTestMode) {
       // Return a mock container for testing
@@ -171,6 +232,19 @@ export class DatabaseService {
     return container;
   }
 
+  /**
+   * Performs a health check on the database connection.
+   * Tests connectivity by performing a simple read operation on the database.
+   * 
+   * @returns Promise<{status: string; database: string; authenticationType?: string}> Health status information
+   * 
+   * @example
+   * ```typescript
+   * const health = await dbService.healthCheck();
+   * console.log(health); 
+   * // { status: "healthy", database: "hikedb", authenticationType: "azure-ad" }
+   * ```
+   */
   async healthCheck(): Promise<{ status: string; database: string; authenticationType?: string }> {
     try {
       if (this.isTestMode) {
@@ -206,6 +280,19 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Closes the database connection and cleans up resources.
+   * Currently a no-op as Cosmos DB client doesn't require explicit closing.
+   * Provided for consistency and future use.
+   * 
+   * @returns Promise<void>
+   * 
+   * @example
+   * ```typescript
+   * await dbService.close();
+   * console.log('Database connection closed');
+   * ```
+   */
   async close(): Promise<void> {
     // Cosmos DB client doesn't require explicit closing
     // This method is here for consistency and future use
