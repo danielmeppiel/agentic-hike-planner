@@ -2,6 +2,91 @@ import { Container, SqlQuerySpec } from '@azure/cosmos';
 import { BaseRepository } from './BaseRepository';
 import { Trail, TrailSearchFilters, TrailSearchRequest, DifficultyLevel } from '../types';
 
+/**
+ * Repository for managing trail data with geographic distribution patterns.
+ * 
+ * ## Partition Key Strategy
+ * 
+ * Uses **region as partition key** for geographic data distribution:
+ * - Trails are partitioned by geographic region for locality
+ * - Enables efficient regional searches and recommendations
+ * - Supports location-based filtering with single-partition queries
+ * - Balances load across regions for global trail databases
+ * 
+ * ## Indexing Strategy for Complex Queries
+ * 
+ * Comprehensive indexing for multi-criteria trail search:
+ * ```json
+ * {
+ *   "indexingPolicy": {
+ *     "includedPaths": [
+ *       { "path": "/characteristics/difficulty/?" },     // Hash index for difficulty filtering
+ *       { "path": "/characteristics/distance/?" },       // Range index for distance queries  
+ *       { "path": "/characteristics/duration/min/?" },   // Range index for duration filtering
+ *       { "path": "/characteristics/duration/max/?" },   // Range index for duration filtering
+ *       { "path": "/characteristics/elevationGain/?" },  // Range index for elevation queries
+ *       { "path": "/location/region/?" },               // Range index for geographic queries
+ *       { "path": "/location/country/?" },              // Hash index for country filtering
+ *       { "path": "/ratings/average/?" },               // Range index for rating-based sorting
+ *       { "path": "/isActive/?" }                       // Hash index for active trail filtering
+ *     ],
+ *     "compositeIndexes": [
+ *       [
+ *         { "path": "/location/region", "order": "ascending" },
+ *         { "path": "/ratings/average", "order": "descending" }
+ *       ],
+ *       [
+ *         { "path": "/characteristics/difficulty", "order": "ascending" },
+ *         { "path": "/characteristics/distance", "order": "ascending" }
+ *       ]
+ *     ]
+ *   }
+ * }
+ * ```
+ * 
+ * ## Advanced Query Patterns
+ * 
+ * ### Multi-Criteria Search
+ * Supports complex trail filtering with multiple simultaneous criteria:
+ * - Difficulty level ranges
+ * - Distance and duration constraints  
+ * - Elevation gain requirements
+ * - Geographic boundaries
+ * - Rating thresholds
+ * - Trail type categorization
+ * 
+ * ### Geospatial Considerations
+ * Current implementation uses simplified region-based queries.
+ * Future enhancements could include:
+ * ```sql
+ * -- Geospatial distance queries (future implementation)
+ * SELECT * FROM c 
+ * WHERE ST_DISTANCE(c.location.coordinates, @center) < @radiusKm * 1000
+ * AND c.characteristics.difficulty = @difficulty
+ * ORDER BY ST_DISTANCE(c.location.coordinates, @center)
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * const trailRepository = new TrailRepository(container);
+ * 
+ * // Regional trail discovery (single-partition, efficient)
+ * const pacificTrails = await trailRepository.findByRegion('pacific-northwest');
+ * 
+ * // Complex multi-criteria search
+ * const searchResults = await trailRepository.searchTrails({
+ *   filters: {
+ *     difficulty: ['intermediate', 'advanced'],
+ *     distance: { min: 5, max: 15 },
+ *     elevationGain: { max: 3000 },
+ *     location: { region: 'colorado' }
+ *   },
+ *   sortBy: 'rating',
+ *   sortOrder: 'desc',
+ *   limit: 20
+ * });
+ * ```
+ */
 export class TrailRepository extends BaseRepository<Trail> {
   constructor(container: Container) {
     super(container);
@@ -46,6 +131,108 @@ export class TrailRepository extends BaseRepository<Trail> {
     return result.items;
   }
 
+  /**
+   * Executes complex multi-criteria trail search with filtering, sorting, and pagination.
+   * 
+   * ## Advanced Search Architecture
+   * 
+   * This method demonstrates sophisticated Cosmos DB query patterns:
+   * - **Dynamic query building**: Constructs SQL based on provided filters
+   * - **Parameterized queries**: Prevents SQL injection with named parameters
+   * - **Full-text search**: Uses CONTAINS function for text matching
+   * - **Range filtering**: Supports min/max constraints on numeric fields
+   * - **Compound sorting**: Multiple sort criteria with custom ordering
+   * - **Parallel execution**: COUNT and search queries execute simultaneously
+   * 
+   * ## Query Construction Strategy
+   * 
+   * ### Dynamic WHERE Clause Building
+   * ```typescript
+   * // Example generated query for intermediate trails in Colorado, 5-15 miles
+   * SELECT * FROM c 
+   * WHERE c.isActive = true 
+   * AND c.characteristics.difficulty = @difficulty
+   * AND c.location.region = @region  
+   * AND c.characteristics.distance >= @minDistance
+   * AND c.characteristics.distance <= @maxDistance
+   * ORDER BY c.ratings.average DESC 
+   * OFFSET @offset LIMIT @limit
+   * ```
+   * 
+   * ### Parameter Safety
+   * All user inputs are parameterized to prevent injection:
+   * ```typescript
+   * parameters: [
+   *   { name: '@difficulty', value: 'intermediate' },
+   *   { name: '@region', value: 'colorado' },
+   *   { name: '@minDistance', value: 5 },
+   *   { name: '@maxDistance', value: 15 }
+   * ]
+   * ```
+   * 
+   * ## Performance Optimization
+   * 
+   * ### Index Utilization
+   * - Difficulty filter: Uses hash index on `/characteristics/difficulty/?`
+   * - Distance range: Uses range index on `/characteristics/distance/?`
+   * - Rating sort: Uses range index on `/ratings/average/?`
+   * - Regional filter: Uses range index on `/location/region/?`
+   * 
+   * ### RU Cost Management
+   * - Parallel COUNT and search queries reduce round trips
+   * - Single-partition queries when filtering by region
+   * - Pagination limits result set size
+   * - Early query termination with OFFSET/LIMIT
+   * 
+   * ## Search Feature Support
+   * 
+   * ### Text Search Capabilities
+   * - Trail name matching
+   * - Description content search  
+   * - Park and location name search
+   * - Case-insensitive CONTAINS operations
+   * 
+   * ### Numeric Range Filtering
+   * - Distance: min/max kilometers
+   * - Duration: min/max hours  
+   * - Elevation gain: min/max meters
+   * - Rating: min/max star ratings
+   * 
+   * ### Categorical Filtering
+   * - Difficulty levels: beginner, intermediate, advanced, expert
+   * - Trail types: loop, out-and-back, point-to-point
+   * - Geographic regions and countries
+   * 
+   * @param searchRequest - Comprehensive search criteria and pagination parameters
+   * @returns Promise resolving to paginated search results with total count
+   * @throws Error if search execution fails or invalid parameters provided
+   * 
+   * @example
+   * ```typescript
+   * // Advanced trail search example
+   * const searchResults = await trailRepository.searchTrails({
+   *   query: 'mountain lake',
+   *   filters: {
+   *     difficulty: ['intermediate', 'advanced'],
+   *     distance: { min: 8, max: 20 },
+   *     elevationGain: { min: 500, max: 2000 },
+   *     duration: { max: 8 },
+   *     location: { region: 'colorado' },
+   *     rating: { min: 4.0 },
+   *     trailTypes: ['loop', 'out-and-back']
+   *   },
+   *   sortBy: 'rating',
+   *   sortOrder: 'desc',
+   *   limit: 25,
+   *   offset: 0
+   * });
+   * 
+   * console.log(`Found ${searchResults.total} trails, showing ${searchResults.trails.length}`);
+   * if (searchResults.hasMore) {
+   *   // Load next page...
+   * }
+   * ```
+   */
   async searchTrails(searchRequest: TrailSearchRequest): Promise<{
     trails: Trail[];
     total: number;
