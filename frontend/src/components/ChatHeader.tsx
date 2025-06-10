@@ -1,6 +1,25 @@
 import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
 
+/**
+ * Chat header component displaying the application title, logo, and user authentication state.
+ * Shows sign-in button for unauthenticated users or user menu with settings and sign-out
+ * options for authenticated users.
+ * 
+ * @example
+ * ```tsx
+ * import { ChatHeader } from './ChatHeader';
+ * 
+ * function ChatInterface() {
+ *   return (
+ *     <div>
+ *       <ChatHeader />
+ *       {/* Chat content */}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function ChatHeader() {
   const { user, isAuthenticated, signOut } = useAuthStore();
 

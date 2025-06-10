@@ -1,9 +1,32 @@
 import { ChatBubbleLeftRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 interface ConversationStartersProps {
+  /** Callback function called when a conversation starter is clicked */
   onStarterClick: (starter: string) => void;
 }
 
+/**
+ * Conversation starters component that displays categorized example prompts
+ * to help users begin conversations with the AI hiking assistant. Organized
+ * into categories like Trail Discovery, Trip Planning, and Gear & Safety.
+ * 
+ * @param props - Component props
+ * @param props.onStarterClick - Function called when a starter is clicked, receives the starter text
+ * 
+ * @example
+ * ```tsx
+ * function ChatInterface() {
+ *   const handleStarterClick = (starter: string) => {
+ *     // Send the starter as a message
+ *     sendMessage(starter);
+ *   };
+ * 
+ *   return (
+ *     <ConversationStarters onStarterClick={handleStarterClick} />
+ *   );
+ * }
+ * ```
+ */
 export function ConversationStarters({ onStarterClick }: ConversationStartersProps) {
   const starters = [
     {

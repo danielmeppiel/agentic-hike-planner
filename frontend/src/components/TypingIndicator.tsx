@@ -1,3 +1,21 @@
+/**
+ * Typing indicator component that shows when the AI is generating a response.
+ * Displays an animated three-dot indicator in a chat bubble with the AI avatar.
+ * 
+ * @example
+ * ```tsx
+ * function ChatInterface() {
+ *   const [isTyping, setIsTyping] = useState(false);
+ * 
+ *   return (
+ *     <div>
+ *       {messages.map(message => <ChatMessage key={message.id} message={message} />)}
+ *       {isTyping && <TypingIndicator />}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function TypingIndicator() {
   return (
     <div className="flex justify-start">

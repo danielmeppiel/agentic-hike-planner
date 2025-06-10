@@ -2,9 +2,32 @@ import React from 'react';
 import { Button } from '../ui';
 
 interface HeaderProps {
+  /** Callback function called when the mobile menu button is clicked */
   onMenuClick: () => void;
 }
 
+/**
+ * Application header component with navigation menu toggle and user interface.
+ * Features a glass-morphism design with the app logo, title, and user avatar/sign-out functionality.
+ * Includes a mobile-responsive menu button for sidebar navigation.
+ * 
+ * @param props - Component props
+ * @param props.onMenuClick - Function called when the mobile menu button is clicked
+ * 
+ * @example
+ * ```tsx
+ * function AppLayout() {
+ *   const [sidebarOpen, setSidebarOpen] = useState(false);
+ * 
+ *   return (
+ *     <div>
+ *       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+ *       <main>{/* content */}</main>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   return (
     <header className="glass border-b border-white/20 backdrop-blur-md sticky top-0 z-40">

@@ -2,9 +2,38 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
+  /** Whether the sidebar is currently open (for mobile) */
   isOpen: boolean;
+  /** Callback function called when sidebar should be closed */
   onClose: () => void;
 }
+
+/**
+ * Sidebar navigation component with responsive design.
+ * Provides navigation links to different sections of the application.
+ * Can be toggled open/closed on mobile devices with an overlay.
+ * 
+ * @param props - Component props
+ * @param props.isOpen - Boolean indicating if sidebar is open (primarily for mobile)
+ * @param props.onClose - Function called when sidebar should be closed (e.g., clicking overlay)
+ * 
+ * @example
+ * ```tsx
+ * function AppLayout() {
+ *   const [sidebarOpen, setSidebarOpen] = useState(false);
+ * 
+ *   return (
+ *     <div>
+ *       <Sidebar 
+ *         isOpen={sidebarOpen} 
+ *         onClose={() => setSidebarOpen(false)} 
+ *       />
+ *       <main>{/* content */}</main>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 
 const navigation = [
   { name: 'Dashboard', href: '/app', icon: 'home' },

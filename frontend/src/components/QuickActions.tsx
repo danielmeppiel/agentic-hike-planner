@@ -8,10 +8,37 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface QuickActionsProps {
+  /** Callback function called when a quick action is clicked */
   onActionClick: (action: string) => void;
+  /** Whether to display in compact mode (fewer actions, smaller size) */
   compact?: boolean;
 }
 
+/**
+ * Quick action buttons component providing shortcuts to common hiking-related tasks.
+ * Displays a grid of action buttons with icons, labels, and emojis for easy interaction.
+ * Supports both full and compact display modes.
+ * 
+ * @param props - Component props
+ * @param props.onActionClick - Function called when an action button is clicked, receives the action label
+ * @param props.compact - Optional flag to display in compact mode with fewer actions
+ * 
+ * @example
+ * ```tsx
+ * function ChatInterface() {
+ *   const handleQuickAction = (action: string) => {
+ *     console.log('Action clicked:', action);
+ *   };
+ * 
+ *   return (
+ *     <QuickActions 
+ *       onActionClick={handleQuickAction} 
+ *       compact={false} 
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export function QuickActions({ onActionClick, compact = false }: QuickActionsProps) {
   const actions = [
     {
