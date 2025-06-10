@@ -58,7 +58,7 @@ export const useTrips = () => {
  * 
  *   return (
  *     <form onSubmit={handleSubmit}>
- *       {/* form fields */}
+ *       <div>Form fields go here</div>
  *       <button 
  *         type="submit" 
  *         disabled={createTripMutation.isPending}
@@ -149,10 +149,7 @@ export const useUpdateTrip = () => {
  *   return (
  *     <div>
  *       <h3>{trip.title}</h3>
- *       <button 
- *         onClick={handleDelete}
- *         disabled={deleteTripMutation.isPending}
- *       >
+ *       <button onClick={handleDelete}>
  *         Delete Trip
  *       </button>
  *     </div>

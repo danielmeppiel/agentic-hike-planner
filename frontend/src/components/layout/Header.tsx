@@ -22,7 +22,7 @@ interface HeaderProps {
  *   return (
  *     <div>
  *       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
- *       <main>{/* content */}</main>
+ *       <main>Content goes here</main>
  *     </div>
  *   );
  * }

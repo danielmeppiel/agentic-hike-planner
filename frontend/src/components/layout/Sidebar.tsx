@@ -28,7 +28,7 @@ interface SidebarProps {
  *         isOpen={sidebarOpen} 
  *         onClose={() => setSidebarOpen(false)} 
  *       />
- *       <main>{/* content */}</main>
+ *       <main>Content goes here</main>
  *     </div>
  *   );
  * }

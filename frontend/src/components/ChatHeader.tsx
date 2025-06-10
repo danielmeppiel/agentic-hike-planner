@@ -14,7 +14,7 @@ import { useAuthStore } from '../stores/authStore';
  *   return (
  *     <div>
  *       <ChatHeader />
- *       {/* Chat content */}
+ *       <div>Chat content goes here</div>
  *     </div>
  *   );
  * }
