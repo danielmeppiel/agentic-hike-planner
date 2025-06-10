@@ -2,6 +2,25 @@ import { DatabaseService } from './database';
 import { UserRepository, TripRepository, TrailRepository, RecommendationRepository } from '../repositories';
 import { MockDataGenerator } from './mockDataGenerator';
 
+/**
+ * Service responsible for seeding Azure Cosmos DB with mock data for development and testing.
+ * Coordinates with MockDataGenerator to create realistic test data across all entities.
+ * Provides methods for full database seeding and individual entity population.
+ * 
+ * @example
+ * ```typescript
+ * const seeder = new DataSeeder();
+ * await seeder.initialize();
+ * 
+ * // Seed all data types
+ * const counts = await seeder.seedAll({
+ *   users: 50,
+ *   trails: 200,
+ *   trips: 100,
+ *   recommendations: 75
+ * });
+ * ```
+ */
 export class DataSeeder {
   private userRepository: UserRepository;
   private tripRepository: TripRepository;
@@ -10,12 +29,41 @@ export class DataSeeder {
   private mockGenerator: MockDataGenerator;
   private databaseService: DatabaseService;
 
+  /**
+   * Creates a new DataSeeder instance.
+   * 
+   * @param databaseService - Optional database service instance. If not provided, uses the singleton instance.
+   * 
+   * @example
+   * ```typescript
+   * // Use default database service
+   * const seeder = new DataSeeder();
+   * 
+   * // Use custom database service
+   * const customDb = new DatabaseService();
+   * const seeder = new DataSeeder(customDb);
+   * ```
+   */
   constructor(databaseService?: DatabaseService) {
     this.mockGenerator = new MockDataGenerator();
     // Use provided database service or import the singleton
     this.databaseService = databaseService || require('./database').databaseService;
   }
 
+  /**
+   * Initializes all repository instances with their respective Cosmos DB containers.
+   * Must be called before using any seeding operations.
+   * 
+   * @returns Promise<void>
+   * @throws Will throw an error if any repository initialization fails
+   * 
+   * @example
+   * ```typescript
+   * const seeder = new DataSeeder();
+   * await seeder.initialize();
+   * // Repositories are now ready for seeding operations
+   * ```
+   */
   async initialize(): Promise<void> {
     // Initialize repositories
     this.userRepository = new UserRepository(this.databaseService.getContainer('users'));
@@ -24,6 +72,33 @@ export class DataSeeder {
     this.recommendationRepository = new RecommendationRepository(this.databaseService.getContainer('recommendations'));
   }
 
+  /**
+   * Seeds the database with all data types in the correct order to maintain referential integrity.
+   * Creates users first, then trails, then trips, and finally recommendations.
+   * 
+   * @param options - Configuration object specifying the number of each entity type to create
+   * @param options.users - Number of user profiles to create (default: 20)
+   * @param options.trails - Number of trails to create (default: 100)
+   * @param options.trips - Number of trip plans to create (default: 50)
+   * @param options.recommendations - Number of AI recommendations to create (default: 30)
+   * @returns Promise<{users: number; trails: number; trips: number; recommendations: number}> - Actual counts of created entities
+   * @throws Will throw an error if any seeding operation fails
+   * 
+   * @example
+   * ```typescript
+   * const seeder = new DataSeeder();
+   * await seeder.initialize();
+   * 
+   * const result = await seeder.seedAll({
+   *   users: 100,
+   *   trails: 500,
+   *   trips: 200,
+   *   recommendations: 150
+   * });
+   * 
+   * console.log(`Created ${result.users} users, ${result.trails} trails`);
+   * ```
+   */
   async seedAll(options: {
     users?: number;
     trails?: number;
@@ -79,6 +154,20 @@ export class DataSeeder {
     }
   }
 
+  /**
+   * Seeds the database with mock user profiles.
+   * Creates diverse user profiles with varying fitness levels, preferences, and locations.
+   * 
+   * @param count - Number of user profiles to create (default: 20)
+   * @returns Promise<string[]> - Array of created user IDs
+   * @throws Will log warnings for failed user creations but continue with remaining users
+   * 
+   * @example
+   * ```typescript
+   * const userIds = await seeder.seedUsers(50);
+   * console.log(`Created ${userIds.length} users`);
+   * ```
+   */
   async seedUsers(count: number = 20): Promise<string[]> {
     const users = this.mockGenerator.generateUsers(count);
     const userIds: string[] = [];
@@ -98,6 +187,21 @@ export class DataSeeder {
     return userIds;
   }
 
+  /**
+   * Seeds the database with mock trail data using batch processing for performance.
+   * Creates trails with realistic characteristics, locations, and ratings.
+   * Uses batching to optimize Cosmos DB write operations.
+   * 
+   * @param count - Number of trails to create (default: 100)
+   * @returns Promise<string[]> - Array of created trail IDs
+   * @throws Will log warnings for failed trail creations but continue with remaining trails
+   * 
+   * @example
+   * ```typescript
+   * const trailIds = await seeder.seedTrails(200);
+   * console.log(`Created ${trailIds.length} trails across various difficulty levels`);
+   * ```
+   */
   async seedTrails(count: number = 100): Promise<string[]> {
     const trails = this.mockGenerator.generateTrails(count);
     const trailIds: string[] = [];

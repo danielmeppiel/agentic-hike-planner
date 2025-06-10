@@ -4,16 +4,41 @@ import { TrailRepository } from '../repositories/TrailRepository';
 import { DatabaseService } from '../services/database';
 import type { TrailSearchFilters, TrailSearchRequest, DifficultyLevel } from '../types';
 
+/**
+ * Controller responsible for trail-related operations including search, retrieval, and recommendations.
+ * Handles HTTP endpoints for discovering and accessing trail information from Azure Cosmos DB.
+ * 
+ * @example
+ * ```typescript
+ * const trailsController = new TrailsController();
+ * app.get('/trails/search', trailsController.searchTrails);
+ * app.get('/trails/:id', trailsController.getTrailById);
+ * ```
+ */
 export class TrailsController {
   private trailRepository: TrailRepository | null = null;
   private databaseService: DatabaseService;
 
+  /**
+   * Creates a new TrailsController instance and initializes database connectivity.
+   * Sets up Azure Cosmos DB connection and trail repository for data access.
+   * 
+   * @throws Will throw an error if database initialization fails
+   */
   constructor() {
     // Initialize database service and repository
     this.databaseService = new DatabaseService(false); // Use real Azure database
     this.initializeRepository();
   }
 
+  /**
+   * Initializes the trail repository with Azure Cosmos DB container.
+   * This method sets up the connection to the trails container for data operations.
+   * 
+   * @private
+   * @returns Promise<void>
+   * @throws Will throw an error if database service initialization fails
+   */
   private async initializeRepository(): Promise<void> {
     try {
       await this.databaseService.initialize();
@@ -25,7 +50,36 @@ export class TrailsController {
     }
   }
 
-  // Search trails with filters
+  /**
+   * Searches for trails based on location, difficulty, and other filters.
+   * Supports pagination and various search criteria to help users find suitable trails.
+   * 
+   * @param req - Express request object containing query parameters:
+   *   - location: string - Location name for searching trails
+   *   - difficulty: DifficultyLevel - Trail difficulty filter ('beginner' | 'intermediate' | 'advanced' | 'expert')
+   *   - maxDistance: number - Maximum trail distance in kilometers
+   *   - limit: number - Number of results per page (default: 20)
+   *   - offset: number - Number of results to skip for pagination (default: 0)
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with search results and pagination info
+   * 
+   * @example
+   * ```
+   * GET /trails/search?location=Yosemite&difficulty=intermediate&maxDistance=15&limit=10&offset=0
+   * Response: {
+   *   "trails": [...],
+   *   "pagination": {
+   *     "total": 45,
+   *     "limit": 10,
+   *     "offset": 0,
+   *     "hasMore": true
+   *   },
+   *   "message": "Trails retrieved successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 500 error if search operation fails
+   */
   public searchTrails = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { location, difficulty, maxDistance, limit = 20, offset = 0 } = req.query;
 
@@ -85,7 +139,32 @@ export class TrailsController {
     }
   });
 
-  // Get trail details by ID  
+  /**
+   * Retrieves detailed information for a specific trail by its ID.
+   * Returns comprehensive trail data including location, characteristics, features, and ratings.
+   * 
+   * @param req - Express request object with trail ID in params
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with trail details or 404 if not found
+   * 
+   * @example
+   * ```
+   * GET /trails/123e4567-e89b-12d3-a456-426614174000
+   * Response: {
+   *   "trail": {
+   *     "id": "123e4567-e89b-12d3-a456-426614174000",
+   *     "name": "Half Dome Trail",
+   *     "description": "Challenging hike with iconic cable section...",
+   *     "characteristics": { "difficulty": "expert", "distance": 22.5 },
+   *     ...
+   *   },
+   *   "message": "Trail retrieved successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 404 error if trail is not found
+   * @throws Returns 500 error if retrieval operation fails
+   */
   public getTrailById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
@@ -124,7 +203,36 @@ export class TrailsController {
     }
   });
 
-  // Get trail recommendations
+  /**
+   * Provides personalized trail recommendations based on user preferences and experience level.
+   * Uses filtering algorithms to suggest trails that match the user's fitness level and preferences.
+   * 
+   * @param req - Express request object with query parameters:
+   *   - difficulty: DifficultyLevel - Preferred trail difficulty
+   *   - location: string - Preferred location for recommendations
+   *   - experienceLevel: string - User's hiking experience level ('beginner', 'intermediate', etc.)
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with recommended trails and algorithm metadata
+   * 
+   * @example
+   * ```
+   * GET /trails/recommendations?difficulty=intermediate&location=California&experienceLevel=beginner
+   * Response: {
+   *   "recommendations": [
+   *     { "id": "...", "name": "Mist Trail", "difficulty": "intermediate" },
+   *     ...
+   *   ],
+   *   "message": "Trail recommendations retrieved successfully",
+   *   "meta": {
+   *     "algorithm": "database-v1",
+   *     "criteria": { "difficulty": "intermediate", "experienceLevel": "beginner" },
+   *     "total": 25
+   *   }
+   * }
+   * ```
+   * 
+   * @throws Returns 500 error if recommendation generation fails
+   */
   public getRecommendations = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { difficulty, location, experienceLevel } = req.query;
 

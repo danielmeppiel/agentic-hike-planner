@@ -2,20 +2,37 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { asyncHandler, createError } from '../middleware/errorHandler';
 
+/**
+ * Represents a hiking trip with all associated details.
+ * @interface Trip
+ */
 interface Trip {
+  /** Unique identifier for the trip */
   id: string;
+  /** ID of the user who created the trip */
   userId: string;
+  /** Display name of the trip */
   name: string;
+  /** Optional detailed description of the trip */
   description?: string;
+  /** ISO 8601 formatted start date */
   startDate: string;
+  /** ISO 8601 formatted end date */
   endDate: string;
+  /** Difficulty level of the trip */
   difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  /** Geographic location of the trip */
   location: {
+    /** Human-readable location name */
     name: string;
+    /** Latitude coordinate */
     latitude: number;
+    /** Longitude coordinate */
     longitude: number;
   };
+  /** ISO 8601 formatted creation timestamp */
   createdAt: string;
+  /** ISO 8601 formatted last update timestamp */
   updatedAt: string;
 }
 
@@ -39,8 +56,46 @@ const mockTrips: Trip[] = [
   },
 ];
 
+/**
+ * Controller responsible for managing hiking trip operations.
+ * Provides CRUD operations for user trips including creation, retrieval, updates, and deletion.
+ * Currently uses mock data storage but designed for Azure Cosmos DB integration.
+ * 
+ * @example
+ * ```typescript
+ * const tripsController = new TripsController();
+ * app.get('/trips', tripsController.getAllTrips);
+ * app.post('/trips', tripsController.createTrip);
+ * ```
+ */
 export class TripsController {
-  // Get all trips for authenticated user
+  /**
+   * Retrieves all trips for the authenticated user.
+   * Returns trips associated with the current user's ID from the request context.
+   * 
+   * @param req - Express request object with authenticated user information in req.user
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with user's trips and count
+   * 
+   * @example
+   * ```
+   * GET /trips
+   * Response: {
+   *   "trips": [
+   *     {
+   *       "id": "123e4567-e89b-12d3-a456-426614174000",
+   *       "name": "Mount Washington Hike",
+   *       "startDate": "2024-07-15T08:00:00Z",
+   *       ...
+   *     }
+   *   ],
+   *   "count": 1,
+   *   "message": "Trips retrieved successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 401 error if user is not authenticated
+   */
   public getAllTrips = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.id;
     
@@ -58,7 +113,31 @@ export class TripsController {
     });
   });
 
-  // Get specific trip by ID
+  /**
+   * Retrieves a specific trip by its ID for the authenticated user.
+   * Ensures users can only access their own trips for security.
+   * 
+   * @param req - Express request object with trip ID in params and authenticated user
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with trip details or 404 if not found
+   * 
+   * @example
+   * ```
+   * GET /trips/123e4567-e89b-12d3-a456-426614174000
+   * Response: {
+   *   "trip": {
+   *     "id": "123e4567-e89b-12d3-a456-426614174000",
+   *     "name": "Mount Washington Hike",
+   *     "description": "Challenging hike to the summit...",
+   *     ...
+   *   },
+   *   "message": "Trip retrieved successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 401 error if user is not authenticated
+   * @throws Returns 404 error if trip is not found or doesn't belong to user
+   */
   public getTripById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -79,7 +158,38 @@ export class TripsController {
     });
   });
 
-  // Create new trip
+  /**
+   * Creates a new trip for the authenticated user.
+   * Generates a unique ID and sets creation timestamps automatically.
+   * 
+   * @param req - Express request object with trip data in body and authenticated user
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with created trip data
+   * 
+   * @example
+   * ```
+   * POST /trips
+   * Body: {
+   *   "name": "Yosemite Adventure",
+   *   "description": "Weekend hiking trip",
+   *   "startDate": "2024-08-15T08:00:00Z",
+   *   "endDate": "2024-08-17T18:00:00Z",
+   *   "difficulty": "intermediate",
+   *   "location": {
+   *     "name": "Yosemite National Park, CA",
+   *     "latitude": 37.8651,
+   *     "longitude": -119.5383
+   *   }
+   * }
+   * Response: {
+   *   "trip": { "id": "new-uuid", ... },
+   *   "message": "Trip created successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 401 error if user is not authenticated
+   * @throws Returns 400 error if required trip data is missing or invalid
+   */
   public createTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.id;
 
@@ -111,7 +221,30 @@ export class TripsController {
     });
   });
 
-  // Update existing trip
+  /**
+   * Updates an existing trip for the authenticated user.
+   * Allows partial updates while automatically updating the modification timestamp.
+   * 
+   * @param req - Express request object with trip ID in params, update data in body, and authenticated user
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with updated trip data
+   * 
+   * @example
+   * ```
+   * PUT /trips/123e4567-e89b-12d3-a456-426614174000
+   * Body: {
+   *   "name": "Updated Trip Name",
+   *   "difficulty": "advanced"
+   * }
+   * Response: {
+   *   "trip": { "id": "123...", "name": "Updated Trip Name", "updatedAt": "2024-01-01T12:00:00Z", ... },
+   *   "message": "Trip updated successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 401 error if user is not authenticated
+   * @throws Returns 404 error if trip is not found or doesn't belong to user
+   */
   public updateTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -144,7 +277,25 @@ export class TripsController {
     });
   });
 
-  // Delete trip
+  /**
+   * Deletes a trip for the authenticated user.
+   * Permanently removes the trip from storage after verifying ownership.
+   * 
+   * @param req - Express request object with trip ID in params and authenticated user
+   * @param res - Express response object
+   * @returns Promise<void> - Responds with deletion confirmation
+   * 
+   * @example
+   * ```
+   * DELETE /trips/123e4567-e89b-12d3-a456-426614174000
+   * Response: {
+   *   "message": "Trip deleted successfully"
+   * }
+   * ```
+   * 
+   * @throws Returns 401 error if user is not authenticated
+   * @throws Returns 404 error if trip is not found or doesn't belong to user
+   */
   public deleteTrip = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const userId = req.user?.id;

@@ -10,9 +10,47 @@ import {
   SurfaceType
 } from '../types';
 
+/**
+ * Service responsible for generating realistic mock data for development and testing.
+ * Creates diverse, interconnected data across all entity types with realistic characteristics
+ * and relationships. Uses randomization algorithms to ensure data variety while maintaining
+ * logical consistency.
+ * 
+ * @example
+ * ```typescript
+ * const generator = new MockDataGenerator();
+ * 
+ * // Generate diverse user profiles
+ * const users = generator.generateUsers(100);
+ * 
+ * // Generate trails with realistic characteristics
+ * const trails = generator.generateTrails(500);
+ * 
+ * // Generate interconnected trip plans
+ * const userIds = users.map(u => u.id);
+ * const trips = generator.generateTrips(userIds, 200);
+ * ```
+ */
 export class MockDataGenerator {
   
-  // Generate random user profiles
+  /**
+   * Generates realistic user profiles with diverse characteristics and preferences.
+   * Creates users with varied fitness levels, location preferences, and hiking preferences
+   * across major hiking regions in the US West Coast.
+   * 
+   * @param count - Number of user profiles to generate (default: 10)
+   * @returns Array of UserProfile objects with complete profile information
+   * 
+   * @example
+   * ```typescript
+   * const generator = new MockDataGenerator();
+   * const users = generator.generateUsers(50);
+   * 
+   * users.forEach(user => {
+   *   console.log(`${user.displayName} (${user.fitnessLevel}) from ${user.location.city}`);
+   * });
+   * ```
+   */
   generateUsers(count: number = 10): UserProfile[] {
     const users: UserProfile[] = [];
     const cities = [
@@ -69,7 +107,24 @@ export class MockDataGenerator {
     return users;
   }
 
-  // Generate realistic trail data
+  /**
+   * Generates realistic trail data with authentic characteristics and geographic distribution.
+   * Creates trails based on real national parks and hiking destinations with accurate
+   * difficulty progressions, elevation profiles, and seasonal accessibility.
+   * 
+   * @param count - Number of trails to generate (default: 50)
+   * @returns Array of Trail objects with complete trail information including
+   *   location, characteristics, features, safety info, amenities, and ratings
+   * 
+   * @example
+   * ```typescript
+   * const trails = generator.generateTrails(200);
+   * 
+   * // Filter by difficulty
+   * const beginnerTrails = trails.filter(t => t.characteristics.difficulty === 'beginner');
+   * console.log(`Generated ${beginnerTrails.length} beginner-friendly trails`);
+   * ```
+   */
   generateTrails(count: number = 50): Trail[] {
     const trails: Trail[] = [];
     const trailNames = [
@@ -203,7 +258,27 @@ export class MockDataGenerator {
     return trails;
   }
 
-  // Generate trip plans
+  /**
+   * Generates trip plans associated with existing users.
+   * Creates realistic trip itineraries with appropriate dates, locations, and participant details.
+   * Ensures logical relationships between trip characteristics and user preferences.
+   * 
+   * @param userIds - Array of user IDs to associate trips with
+   * @param count - Number of trip plans to generate (default: 30)
+   * @returns Array of TripPlan objects with complete trip details including
+   *   dates, location, participants, preferences, and budget information
+   * @throws Will throw an error if userIds array is empty
+   * 
+   * @example
+   * ```typescript
+   * const userIds = ['user-1', 'user-2', 'user-3'];
+   * const trips = generator.generateTrips(userIds, 100);
+   * 
+   * // Group trips by status
+   * const upcomingTrips = trips.filter(t => t.status === 'confirmed');
+   * console.log(`Generated ${upcomingTrips.length} confirmed trips`);
+   * ```
+   */
   generateTrips(userIds: string[], count: number = 30): TripPlan[] {
     const trips: TripPlan[] = [];
     const statuses: TripStatus[] = ['planning', 'confirmed', 'completed', 'cancelled'];
@@ -275,7 +350,30 @@ export class MockDataGenerator {
     return trips;
   }
 
-  // Generate AI recommendations
+  /**
+   * Generates AI recommendation records linking users, trips, and trails.
+   * Creates realistic recommendation scenarios with confidence scores and reasoning.
+   * Includes alternative suggestions and detailed recommendation factors.
+   * 
+   * @param userIds - Array of user IDs to create recommendations for
+   * @param tripIds - Array of trip IDs to associate with recommendations
+   * @param trailIds - Array of trail IDs to recommend
+   * @param count - Number of recommendation records to generate (default: 20)
+   * @returns Array of AIRecommendation objects with confidence scores,
+   *   reasoning, factors analysis, and alternative suggestions
+   * @throws Will throw an error if any of the ID arrays are empty
+   * 
+   * @example
+   * ```typescript
+   * const recommendations = generator.generateRecommendations(
+   *   userIds, tripIds, trailIds, 100
+   * );
+   * 
+   * // Find high-confidence recommendations
+   * const highConfidence = recommendations.filter(r => r.confidence > 0.8);
+   * console.log(`Generated ${highConfidence.length} high-confidence recommendations`);
+   * ```
+   */
   generateRecommendations(userIds: string[], tripIds: string[], trailIds: string[], count: number = 20): AIRecommendation[] {
     const recommendations: AIRecommendation[] = [];
 
@@ -311,7 +409,24 @@ export class MockDataGenerator {
     return recommendations;
   }
 
-  // Helper methods
+  /**
+   * Helper method to select a random subset of elements from an array.
+   * Useful for creating varied combinations in generated data.
+   * 
+   * @private
+   * @template T
+   * @param array - Source array to select from
+   * @param minCount - Minimum number of elements to select
+   * @param maxCount - Maximum number of elements to select
+   * @returns Random subset of the input array
+   * 
+   * @example
+   * ```typescript
+   * const colors = ['red', 'blue', 'green', 'yellow'];
+   * const subset = this.getRandomSubset(colors, 2, 3);
+   * // Returns 2-3 random colors
+   * ```
+   */
   private getRandomSubset<T>(array: T[], minCount: number, maxCount: number): T[] {
     const count = Math.floor(Math.random() * (maxCount - minCount + 1)) + minCount;
     const shuffled = [...array].sort(() => 0.5 - Math.random());
