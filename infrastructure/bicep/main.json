@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "17231432335196398694"
+      "templateHash": "10345981939851659399"
     }
   },
   "parameters": {
@@ -401,7 +401,7 @@
             "value": "[parameters('environment')]"
           },
           "skuName": {
-            "value": "S3"
+            "value": "B2"
           },
           "skuCapacity": {
             "value": 1
@@ -414,7 +414,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.36.1.42791",
-              "templateHash": "8694164402386487558"
+              "templateHash": "11061372072986798867"
             }
           },
           "parameters": {
@@ -439,7 +439,7 @@
             },
             "skuName": {
               "type": "string",
-              "defaultValue": "S3",
+              "defaultValue": "B2",
               "metadata": {
                 "description": "The SKU name for the App Service Plan"
               }

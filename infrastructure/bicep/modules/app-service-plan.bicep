@@ -8,7 +8,7 @@ param location string = resourceGroup().location
 param environment string
 
 @description('The SKU name for the App Service Plan')
-param skuName string = 'S3'
+param skuName string = 'B2'
 
 @description('The SKU capacity')
 param skuCapacity int = 1
