@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "9726562385290565352"
+      "templateHash": "8647406744295223041"
     }
   },
   "parameters": {
@@ -104,7 +104,6 @@
         "Environment": "[parameters('environment')]",
         "Application": "HikePlanner",
         "CostCenter": "Demo",
-        "CostOptimization": "Connected",
         "ServiceTier": "Backend"
       },
       "identity": {

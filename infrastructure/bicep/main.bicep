@@ -103,7 +103,7 @@ module appServicePlan 'modules/app-service-plan.bicep' = {
     appServicePlanName: resourceNames.appServicePlan
     location: location
     environment: environment
-    skuName: 'S3'  // Standard tier for reliable performance
+    skuName: 'B2'  // Basic tier optimized for development workloads
     skuCapacity: 1
   }
 }
