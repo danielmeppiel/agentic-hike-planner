@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "199773179064540954"
+      "templateHash": "8520178938126086792"
     }
   },
   "parameters": {
@@ -32,7 +32,7 @@
       "type": "int",
       "defaultValue": "[if(equals(parameters('environment'), 'prod'), 100, if(equals(parameters('environment'), 'staging'), 50, 25))]",
       "metadata": {
-        "description": "Budget amount in USD - intentionally low for demo cost protection"
+        "description": "Budget amount in USD"
       }
     }
   },
@@ -46,8 +46,8 @@
         "amount": "[parameters('budgetAmount')]",
         "timeGrain": "Monthly",
         "timePeriod": {
-          "startDate": "2024-01-01",
-          "endDate": "2025-12-31"
+          "startDate": "2025-06-01",
+          "endDate": "2026-12-31"
         },
         "filter": {
           "dimensions": {
