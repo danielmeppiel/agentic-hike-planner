@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "12415374261049574989"
+      "templateHash": "17231432335196398694"
     }
   },
   "parameters": {
@@ -50,7 +50,7 @@
         "serverless"
       ],
       "metadata": {
-        "description": "Cosmos DB throughput mode - Phase 1 focuses on intentionally inefficient provisioned mode for demo"
+        "description": "Cosmos DB throughput mode"
       }
     },
     "budgetAlertEmail": {
@@ -99,7 +99,7 @@
         "Environment": "[parameters('environment')]",
         "Application": "HikePlanner",
         "CostCenter": "Demo",
-        "CostOptimization": "Connected",
+        "CostOptimization": "Standard",
         "ServiceTier": "Security"
       }
     },
@@ -169,7 +169,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.36.1.42791",
-              "templateHash": "18345431576666907485"
+              "templateHash": "10334324031889423984"
             }
           },
           "parameters": {
@@ -207,21 +207,21 @@
                 "serverless"
               ],
               "metadata": {
-                "description": "Throughput mode for Cosmos DB - Demo uses intentionally inefficient provisioned mode"
+                "description": "Throughput mode for Cosmos DB"
               }
             },
             "minThroughput": {
               "type": "int",
               "defaultValue": 1000,
               "metadata": {
-                "description": "Minimum throughput for provisioned mode - Intentionally high for demo (1,000 RU/s as per demo.md)"
+                "description": "Minimum throughput for provisioned mode"
               }
             },
             "maxThroughput": {
               "type": "int",
               "defaultValue": 4000,
               "metadata": {
-                "description": "Maximum throughput for autoscale - Intentionally high for demo"
+                "description": "Maximum throughput for autoscale"
               }
             }
           },
@@ -414,7 +414,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.36.1.42791",
-              "templateHash": "14572674233275358436"
+              "templateHash": "8694164402386487558"
             }
           },
           "parameters": {
@@ -441,7 +441,7 @@
               "type": "string",
               "defaultValue": "S3",
               "metadata": {
-                "description": "The SKU name - Intentionally over-provisioned Standard S3 for cost demo"
+                "description": "The SKU name for the App Service Plan"
               }
             },
             "skuCapacity": {
@@ -469,10 +469,7 @@
               "tags": {
                 "Environment": "[parameters('environment')]",
                 "Application": "HikePlanner",
-                "CostCenter": "Demo",
-                "CostOptimization": "OverProvisioned",
-                "OptimalSku": "B2",
-                "WastageReason": "Standard-S3-vs-Basic-B2"
+                "CostCenter": "Demo"
               }
             }
           ],
@@ -541,7 +538,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.36.1.42791",
-              "templateHash": "9726562385290565352"
+              "templateHash": "8647406744295223041"
             }
           },
           "parameters": {
@@ -640,7 +637,6 @@
                 "Environment": "[parameters('environment')]",
                 "Application": "HikePlanner",
                 "CostCenter": "Demo",
-                "CostOptimization": "Connected",
                 "ServiceTier": "Backend"
               },
               "identity": {
@@ -737,7 +733,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.36.1.42791",
-              "templateHash": "199773179064540954"
+              "templateHash": "8520178938126086792"
             }
           },
           "parameters": {
@@ -764,7 +760,7 @@
               "type": "int",
               "defaultValue": "[if(equals(parameters('environment'), 'prod'), 100, if(equals(parameters('environment'), 'staging'), 50, 25))]",
               "metadata": {
-                "description": "Budget amount in USD - intentionally low for demo cost protection"
+                "description": "Budget amount in USD"
               }
             }
           },
@@ -778,8 +774,8 @@
                 "amount": "[parameters('budgetAmount')]",
                 "timeGrain": "Monthly",
                 "timePeriod": {
-                  "startDate": "2024-01-01",
-                  "endDate": "2025-12-31"
+                  "startDate": "2025-06-01",
+                  "endDate": "2026-12-31"
                 },
                 "filter": {
                   "dimensions": {
