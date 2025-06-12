@@ -41,6 +41,15 @@ The Phase 1-2 infrastructure includes:
 
 As per [demo.md](docs/demo.md), Phase 1-2 implements the following inefficiencies for cost optimization demonstration:
 
+**Development Environment (Optimized)**:
+| Resource | Configuration | Status | Monthly Cost Impact |
+|----------|---------------|--------|-------------------|
+| **Cosmos DB** | Serverless mode | ✅ Optimized | ~$0-20/month |
+| **Key Vault** | Standard tier | Basic operations for demo purposes | ~$5/month |
+| **App Service Plan** | Standard S3 tier | Should use Basic B2 for this workload | ~$150/month |
+| **Total** | | | **~$155-175/month** |
+
+**Staging/Production Environments (Still Over-provisioned for Demo)**:
 | Resource | Configuration | Inefficiency | Monthly Cost Impact |
 |----------|---------------|--------------|-------------------|
 | **Cosmos DB** | 1,000 RU/s provisioned | Should use serverless for this workload | ~$60/month |
@@ -228,7 +237,7 @@ Configure the alert email in parameter files:
 
 | Environment | Cosmos DB | App Service Plan | Key Vault | Budget Alerts | Total |
 |-------------|-----------|------------------|-----------|---------------|-------|
-| **Development** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |
+| **Development** | $0-20 (serverless) | $150 (S3) | $5 | $0 | **~$155-175** |
 | **Staging** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |  
 | **Production** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |
 

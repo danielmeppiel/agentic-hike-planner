@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.1.42791",
-      "templateHash": "14572674233275358436"
+      "templateHash": "8694164402386487558"
     }
   },
   "parameters": {
@@ -32,7 +32,7 @@
       "type": "string",
       "defaultValue": "S3",
       "metadata": {
-        "description": "The SKU name - Intentionally over-provisioned Standard S3 for cost demo"
+        "description": "The SKU name for the App Service Plan"
       }
     },
     "skuCapacity": {
@@ -60,10 +60,7 @@
       "tags": {
         "Environment": "[parameters('environment')]",
         "Application": "HikePlanner",
-        "CostCenter": "Demo",
-        "CostOptimization": "OverProvisioned",
-        "OptimalSku": "B2",
-        "WastageReason": "Standard-S3-vs-Basic-B2"
+        "CostCenter": "Demo"
       }
     }
   ],
