@@ -18,6 +18,13 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface SignUpCredentials {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 // Trip planning types
 export interface TripPlan {
   id: string;
