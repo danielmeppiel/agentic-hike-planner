@@ -8,6 +8,7 @@ const authController = new AuthController();
 
 // Authentication routes (no auth required) - these can be called via /user/ OR /auth/
 router.post('/login', authController.login);
+router.post('/signup', authController.signup);
 router.post('/logout', authController.logout);
 router.post('/refresh', authController.refreshToken);
 
