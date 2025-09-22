@@ -18,6 +18,13 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface SignupCredentials {
+  email: string;
+  password: string;
+  name: string;
+  preferences?: UserPreferences;
+}
+
 // Trip planning types
 export interface TripPlan {
   id: string;
@@ -58,7 +65,7 @@ export interface Trail {
         longitude: number;
         latitude: number;
       };
-      waypoints: any[];
+      waypoints: unknown[];
     };
   };
   characteristics: {
