@@ -12,6 +12,7 @@ APP_NAME="hike-planner"
 RESOURCE_GROUP=""
 SUBSCRIPTION_ID=""
 DEPLOYMENT_METHOD="bicep"
+TEMPLATE_TYPE="standard"
 DRY_RUN=false
 ENABLE_FREE_TIER=false
 
@@ -53,6 +54,7 @@ Options:
     -g, --resource-group Resource group name [required]
     -s, --subscription   Azure subscription ID [optional]
     -m, --method         Deployment method (bicep/terraform) [default: bicep]
+    -t, --template       Template type (standard/finops-demo/minimal) [default: standard]
     -f, --free-tier      Enable Cosmos DB free tier [default: false]
     -d, --dry-run        Validate templates without deploying [default: false]
     -h, --help           Show this help message
@@ -105,6 +107,10 @@ parse_args() {
                 DEPLOYMENT_METHOD="$2"
                 shift 2
                 ;;
+            -t|--template)
+                TEMPLATE_TYPE="$2"
+                shift 2
+                ;;
             -f|--free-tier)
                 ENABLE_FREE_TIER=true
                 shift
@@ -140,6 +146,11 @@ validate_inputs() {
 
     if [[ ! "$DEPLOYMENT_METHOD" =~ ^(bicep|terraform)$ ]]; then
         log_error "Deployment method must be one of: bicep, terraform"
+        exit 1
+    fi
+
+    if [[ ! "$TEMPLATE_TYPE" =~ ^(standard|finops-demo|minimal)$ ]]; then
+        log_error "Template type must be one of: standard, finops-demo, minimal"
         exit 1
     fi
 }
@@ -202,8 +213,24 @@ create_resource_group() {
 deploy_bicep() {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local bicep_dir="$script_dir/../infrastructure/bicep"
-    local template_file="$bicep_dir/main.bicep"
-    local parameters_file="$bicep_dir/parameters/${ENVIRONMENT}.json"
+    
+    # Select template file based on template type
+    local template_file
+    local parameters_file
+    case "$TEMPLATE_TYPE" in
+        "finops-demo")
+            template_file="$bicep_dir/main-finops-demo.bicep"
+            parameters_file="$bicep_dir/parameters/${ENVIRONMENT}-finops-demo.json"
+            ;;
+        "minimal")
+            template_file="$bicep_dir/main-minimal.bicep"
+            parameters_file="$bicep_dir/parameters/${ENVIRONMENT}.json"
+            ;;
+        "standard")
+            template_file="$bicep_dir/main.bicep"
+            parameters_file="$bicep_dir/parameters/${ENVIRONMENT}.json"
+            ;;
+    esac
     
     log_info "Deploying infrastructure using Bicep..."
     
@@ -322,6 +349,7 @@ deploy() {
     log_info "  App Name: $APP_NAME"
     log_info "  Resource Group: $RESOURCE_GROUP"
     log_info "  Deployment Method: $DEPLOYMENT_METHOD"
+    log_info "  Template Type: $TEMPLATE_TYPE"
     log_info "  Free Tier: $ENABLE_FREE_TIER"
     log_info "  Dry Run: $DRY_RUN"
     
@@ -339,10 +367,17 @@ deploy() {
         log_success "Deployment completed successfully!"
         log_info ""
         log_info "Next steps:"
-        log_info "1. Update your application's environment variables with the deployed resource information"
-        log_info "2. Deploy your application code to the created App Service"
-        log_info "3. Configure your Static Web App for the frontend"
-        log_info "4. Test the deployed infrastructure"
+        if [[ "$TEMPLATE_TYPE" == "finops-demo" ]]; then
+            log_info "1. Review the intentionally inefficient configuration for cost optimization opportunities"
+            log_info "2. Use the deployed infrastructure to demonstrate FinOps analysis"
+            log_info "3. Deploy your application code to the created Container Apps"
+            log_info "4. Run cost optimization analysis tools"
+        else
+            log_info "1. Update your application's environment variables with the deployed resource information"
+            log_info "2. Deploy your application code to the created infrastructure"
+            log_info "3. Configure your frontend application"
+            log_info "4. Test the deployed infrastructure"
+        fi
     fi
 }
 

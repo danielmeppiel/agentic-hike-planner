@@ -1,54 +1,43 @@
-# Phase 1-2 Deployment Guide: Azure Cosmos DB, App Service & Cost Monitoring
+# FinOps Demo Deployment Guide: Intentionally Inefficient Azure Infrastructure
 
-This guide covers **Phase 1** and **Phase 2** of the Azure Cost Optimization Demo Infrastructure implementation. These phases establish the foundational database infrastructure and App Service platform with intentionally inefficient configuration for cost optimization demonstration, as defined in [Issue #21](https://github.com/danielmeppiel/agentic-hike-planner/issues/21) and [Issue #22](https://github.com/danielmeppiel/agentic-hike-planner/issues/22).
+This guide covers the **FinOps Demo Infrastructure** implementation with **intentionally oversized and inefficient configurations** d### Optimization Opportunities (FinOps Demo)
 
-## 🎯 Phase 1-2 Scope & Objectives
+| Resource | Current | Optimal | Savings |
+|----------|---------|---------|----------|
+| **Container Apps** | Dedicated D4 (always-on) | Consumption (scale-to-zero) | ~$400/month |
+| **Log Analytics** | 50GB daily quota | Free tier | ~$245/month |
+| **Cosmos DB** | 1000 RU/s Provisioned | Serverless | ~$35/month |
+| **Storage** | 3x Hot tier accounts | 1x with lifecycle policies | ~$30/month |
+| **Redis Cache** | Basic C1 tier | Remove entirely | ~$45/month |
+| **Key Vault** | Standard tier | Basic tier | ~$10/month |
+| **Total Potential Savings** | | | **~$765/month (88%)** | specifically for cost optimization demonstrations. This approach uses **Azure Container Apps** instead of App Service to avoid quota limitations while still demonstrating significant cost optimization opportunities.
 
-**Phase 1-2** establishes the foundational infrastructure with intentionally inefficient configuration for cost optimization demonstration.
+## 🎯 FinOps Demo Objectives
 
-### ✅ What's Included in Phase 1-2
+**Purpose**: Create a realistic Azure environment with common cost inefficiencies that can be identified and optimized to demonstrate the value of FinOps practices.
+
+### ✅ What's Included in FinOps Demo
 - **Azure Cosmos DB** with intentionally inefficient provisioned throughput (1,000 RU/s)
-- **Azure Key Vault** for secure secret storage  
-- **App Service Plan** (Standard S3 - over-provisioned for demo)
-- **App Service** (Node.js backend with Azure integrations)
-- **Budget Alerts** (Multi-tier cost monitoring: 50%, 80%, 100%)
-- **Infrastructure as Code** templates (Bicep & Terraform)
-- **Deployment automation** scripts
-- **Integration testing** framework for Azure resources
-- **Performance benchmarking** utilities
-- **Cost monitoring and protection** mechanisms
+- **Azure Container Apps** with oversized dedicated compute (D4 profile with always-on replicas)
+- **Azure Key Vault** (Standard tier when Basic would suffice)
+- **Multiple Storage Accounts** (3x accounts in Hot tier without lifecycle policies)  
+- **Redis Cache** (Unnecessary for this application - redundant with in-memory caching)
+- **Log Analytics** with expensive configuration (50GB daily quota, long retention)
+- **Budget Alerts** with multi-tier cost monitoring
+- **Infrastructure as Code** templates (Bicep)
+- **Cost optimization analysis** with detailed savings potential
 
-### ❌ What's NOT in Phase 1-2
-- Application Gateway (Phase 3+) 
-- Multiple Storage Accounts (Phase 4+)
-- Azure Functions Premium Plans (Phase 5+)
-- Static Web Apps (Phase 6+)
-- CDN and Redis Cache (Phase 7+)
+### 💰 Intentional Inefficiencies & Cost Impact
 
-> **Important**: This follows the phased approach defined in [demo.md](docs/demo.md) and [architecture-inefficient.md](docs/architecture-inefficient.md). Each subsequent phase will add specific inefficient infrastructure components.
-
-## 🏗️ Phase 1-2 Architecture
-
-The Phase 1-2 infrastructure includes:
-
-- **Azure Cosmos DB** (Provisioned 1,000 RU/s) - Intentionally inefficient configuration for cost optimization demo
-- **Azure Key Vault** - Secure storage for Cosmos DB secrets and connection strings
-- **App Service Plan** (Standard S3) - Intentionally over-provisioned for cost demo
-- **App Service** (Node.js backend) - Backend API with Cosmos DB and Key Vault integration
-- **Budget Alerts** - Multi-tier cost monitoring with email notifications
-
-### Intentionally Inefficient Configuration
-
-As per [demo.md](docs/demo.md), Phase 1-2 implements the following inefficiencies for cost optimization demonstration:
-
-| Resource | Configuration | Inefficiency | Monthly Cost Impact |
-|----------|---------------|--------------|-------------------|
-| **Cosmos DB** | 1,000 RU/s provisioned | Should use serverless for this workload | ~$60/month |
-| **Key Vault** | Standard tier | Basic operations for demo purposes | ~$5/month |
-| **App Service Plan** | Standard S3 tier | Should use Basic B2 for this workload | ~$150/month |
-| **Total** | | | **~$215/month** |
-
-**Optimization Potential**: 67% cost reduction by switching to serverless Cosmos DB (~$25/month) and Basic B2 App Service Plan (~$30/month) = **~$85/month total**
+| Resource | Inefficient Configuration | Optimized Alternative | Monthly Savings |
+|----------|---------------------------|----------------------|------------------|
+| **Container Apps** | Dedicated D4 (always-on 2-5 replicas) | Consumption plan (scale-to-zero) | $400 |
+| **Log Analytics** | 50GB daily quota, 180-730 day retention | Free tier, 30-day retention | $200 |
+| **Cosmos DB** | 1000 RU/s provisioned | Serverless mode | $35 |
+| **Storage** | 3x accounts, Hot tier only | 1x account with lifecycle policies | $30 |
+| **Redis Cache** | Basic C1 tier | Remove (use in-memory) | $45 |
+| **Key Vault** | Standard tier | Basic tier | $10 |
+| **🎯 Total** | **$865/month** | **$100/month** | **$765 (88% savings)** |
 
 ## 🔧 Prerequisites
 
@@ -98,34 +87,37 @@ az account show
 #### 1. Validate Templates
 
 ```bash
-# Validate all templates
-./scripts/validate.sh --environment dev --type bicep
+# Validate FinOps demo template (recommended)
+./scripts/validate-finops-demo.sh --resource-group rg-hike-planner-dev --verbose
 
-# Validate with specific resource group
+# Or validate standard templates
 ./scripts/validate.sh --environment dev --resource-group rg-hike-planner-dev --type bicep
 ```
 
 #### 2. Deploy Infrastructure
 
 ```bash
-# Create resource group and deploy (development environment)
+# Deploy FinOps demo infrastructure (recommended for cost optimization demonstrations)
 ./scripts/deploy.sh \
   --environment dev \
   --resource-group rg-hike-planner-dev \
   --location eastus \
+  --template finops-demo
+
+# Deploy minimal infrastructure (Cosmos DB + Key Vault only)
+./scripts/deploy.sh \
+  --environment dev \
+  --resource-group rg-hike-planner-dev \
+  --location eastus \
+  --template minimal \
   --free-tier
 
-# Deploy to staging
+# Deploy standard infrastructure (if App Service quota issues are resolved)
 ./scripts/deploy.sh \
-  --environment staging \
-  --resource-group rg-hike-planner-staging \
-  --location eastus
-
-# Deploy to production
-./scripts/deploy.sh \
-  --environment prod \
-  --resource-group rg-hike-planner-prod \
-  --location eastus
+  --environment dev \
+  --resource-group rg-hike-planner-dev \
+  --location eastus \
+  --template standard
 ```
 
 #### 3. Verify Deployment
@@ -134,11 +126,17 @@ az account show
 # Check deployment status
 az deployment group list --resource-group rg-hike-planner-dev
 
-# Get deployment outputs
+# Get deployment outputs (replace with actual deployment name)
 az deployment group show \
   --resource-group rg-hike-planner-dev \
   --name hike-planner-dev-YYYYMMDD-HHMMSS \
   --query properties.outputs
+
+# For FinOps demo, view cost optimization summary
+az deployment group show \
+  --resource-group rg-hike-planner-dev \
+  --name hike-planner-dev-YYYYMMDD-HHMMSS \
+  --query properties.outputs.fiNOpsDemoSummary.value
 ```
 
 ### Option 2: Terraform Deployment
@@ -187,16 +185,15 @@ STORAGE_NAME=$(az storage account list --resource-group <resource-group> --query
 
 ### Application Settings
 
-The deployment automatically configures the following for your App Service:
+The deployment automatically configures the following for your Container Apps:
 
 ```json
 {
   "NODE_ENV": "production",
   "AZURE_COSMOS_DB_ENDPOINT": "<cosmos-endpoint>",
   "AZURE_COSMOS_DB_DATABASE": "<cosmos-database-name>", 
-  "AZURE_COSMOS_DB_KEY": "@Microsoft.KeyVault(SecretUri=<keyvault-secret-uri>)",
-  "WEBSITE_NODE_DEFAULT_VERSION": "~18",
-  "SCM_DO_BUILD_DURING_DEPLOYMENT": "true"
+  "AZURE_COSMOS_DB_KEY": "<secret-from-keyvault>",
+  "PORT": "3000"
 }
 ```
 
@@ -224,13 +221,13 @@ Configure the alert email in parameter files:
 
 ## 📊 Cost Management
 
-### Environment Costs (Estimated Monthly - Phase 1-2)
+### Environment Costs (Estimated Monthly - FinOps Demo)
 
-| Environment | Cosmos DB | App Service Plan | Key Vault | Budget Alerts | Total |
-|-------------|-----------|------------------|-----------|---------------|-------|
-| **Development** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |
-| **Staging** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |  
-| **Production** | $60 (1000 RU/s) | $150 (S3) | $5 | $0 | **~$215** |
+| Environment | Cosmos DB | Container Apps | Storage (3x) | Redis | Key Vault | Log Analytics | Total |
+|-------------|-----------|----------------|--------------|-------|-----------|---------------|-------|
+| **Development** | $60 (1000 RU/s) | $450 (D4 dedicated) | $45 (Hot tier) | $45 | $15 | $250 | **~$865** |
+| **Optimized** | $25 (serverless) | $50 (consumption) | $15 (lifecycle) | $0 | $5 | $5 | **~$100** |
+| **Savings** | $35 | $400 | $30 | $45 | $10 | $245 | **~$765 (88%)** |
 
 ### Optimization Opportunities (For Demo)
 
@@ -260,11 +257,14 @@ Configure the alert email in parameter files:
 ### 1. Health Check
 
 ```bash
-# Get App Service URL
-APP_URL=$(az webapp show --name <app-service-name> --resource-group <resource-group> --query defaultHostName -o tsv)
+# Get Container Apps URL
+CONTAINER_APP_URL=$(az deployment group show \
+  --resource-group rg-hike-planner-dev \
+  --name <deployment-name> \
+  --query properties.outputs.containerAppUrl.value -o tsv)
 
 # Test health endpoint
-curl https://$APP_URL/health
+curl $CONTAINER_APP_URL/health
 ```
 
 ### 2. Database Connectivity

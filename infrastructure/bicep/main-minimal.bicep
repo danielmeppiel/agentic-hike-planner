@@ -11,11 +11,11 @@ param location string = resourceGroup().location
 param appName string = 'hike-planner'
 
 @description('Enable free tier for Cosmos DB (only one per subscription)')
-param enableCosmosDbFreeTier bool = false
+param enableCosmosDbFreeTier bool = true
 
 @description('Cosmos DB throughput mode')
 @allowed(['provisioned', 'serverless'])
-param cosmosDbThroughputMode string = 'provisioned'
+param cosmosDbThroughputMode string = 'serverless'
 
 @description('Email address for budget alerts')
 param budgetAlertEmail string = 'demo@example.com'
@@ -25,8 +25,6 @@ var uniqueSuffix = take(uniqueString(resourceGroup().id), 6)
 var resourceNames = {
   cosmosDbAccount: '${appName}-cosmos-${environment}-${uniqueSuffix}'
   keyVault: 'hkv-${environment}-${uniqueSuffix}'  // Shortened for 24-char limit
-  containerAppsEnvironment: '${appName}-cae-${environment}-${uniqueSuffix}'
-  containerApp: '${appName}-api-${environment}-${uniqueSuffix}'
   budget: '${appName}-budget-${environment}'
 }
 
@@ -39,9 +37,9 @@ module cosmosDb 'modules/cosmos-db.bicep' = {
     environment: environment
     enableFreeTier: enableCosmosDbFreeTier
     throughputMode: cosmosDbThroughputMode
-    // High throughput configuration for production workloads
-    minThroughput: 1000  // 1,000 RU/s provisioned
-    maxThroughput: 4000
+    // Serverless configuration for cost optimization demo
+    minThroughput: 400  // Lower for serverless
+    maxThroughput: 1000
   }
 }
 
@@ -96,24 +94,6 @@ resource cosmosDbEndpointSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' =
   }
 }
 
-// Container Apps Module - Backend API with intentionally inefficient configuration for FinOps demo
-module containerApps 'modules/container-apps.bicep' = {
-  name: 'containerApps-deployment'
-  params: {
-    containerAppsEnvironmentName: resourceNames.containerAppsEnvironment
-    containerAppName: resourceNames.containerApp
-    location: location
-    environment: environment
-    keyVaultName: keyVault.name
-    cosmosDbEndpoint: cosmosDb.outputs.cosmosDbEndpoint
-    cosmosDbDatabaseName: cosmosDb.outputs.databaseName
-  }
-  dependsOn: [
-    cosmosDbPrimaryKeySecret
-    cosmosDbEndpointSecret
-  ]
-}
-
 // Budget Alerts Module - Cost monitoring and protection
 module budgetAlerts 'modules/budget-alerts.bicep' = {
   name: 'budgetAlerts-deployment'
@@ -134,13 +114,6 @@ output cosmosDbPrimaryKey string = cosmosDb.outputs.cosmosDbPrimaryKey
 @secure()
 output cosmosDbConnectionString string = cosmosDb.outputs.cosmosDbConnectionString
 output keyVaultName string = keyVault.name
-
-// Container Apps outputs
-output containerAppsEnvironmentName string = containerApps.outputs.containerAppsEnvironmentName
-output containerAppName string = containerApps.outputs.containerAppName
-output containerAppUrl string = 'https://${containerApps.outputs.containerAppFqdn}'
-output containerAppPrincipalId string = containerApps.outputs.containerAppPrincipalId
-output costOptimizationSummary object = containerApps.outputs.costOptimizationSummary
 
 // Budget and cost monitoring outputs
 output budgetName string = budgetAlerts.outputs.budgetName

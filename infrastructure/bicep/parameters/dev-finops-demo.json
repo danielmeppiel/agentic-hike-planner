@@ -9,10 +9,10 @@
       "value": "hike-planner"
     },
     "enableCosmosDbFreeTier": {
-      "value": true
+      "value": false
     },
     "cosmosDbThroughputMode": {
-      "value": "serverless"
+      "value": "provisioned"
     },
     "budgetAlertEmail": {
       "value": "demo@example.com"
