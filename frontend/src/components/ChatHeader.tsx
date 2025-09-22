@@ -1,8 +1,11 @@
 import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
+import { AuthModal } from './AuthModal';
 
 export function ChatHeader() {
   const { user, isAuthenticated, signOut } = useAuthStore();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <header className="glass-dark border-b border-white/10">
@@ -47,7 +50,7 @@ export function ChatHeader() {
             </div>
           ) : (
             <button
-              onClick={() => {/* TODO: Open auth modal */}}
+              onClick={() => setIsAuthModalOpen(true)}
               className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
             >
               Sign In
@@ -55,6 +58,11 @@ export function ChatHeader() {
           )}
         </div>
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </header>
   );
 }
