@@ -201,9 +201,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React Community** for excellent frontend tooling
 - **TypeScript Team** for type safety and developer experience
 
+## 💰 Cost Optimization
+
+This repository includes tools and templates for demonstrating Azure cost optimization:
+
+- **App Service Plan Optimization**: Right-size from Standard S3 to Basic B2 for $120/month savings (80% reduction)
+- **Demo Deployments**: Intentionally inefficient configurations to showcase optimization opportunities
+- **Automated Scripts**: End-to-end deployment, optimization, and testing workflows
+
+See [docs/cost-optimization-appservice.md](docs/cost-optimization-appservice.md) for detailed instructions.
+
 ## 📞 Support
 
 - **Documentation**: [docs/](docs/)
+- **Cost Optimization Guide**: [docs/cost-optimization-appservice.md](docs/cost-optimization-appservice.md)
+- **Demo Guide**: [docs/demo.md](docs/demo.md)
 - **Issues**: [GitHub Issues](https://github.com/your-username/agentic-hike-planner/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/your-username/agentic-hike-planner/discussions)
 
