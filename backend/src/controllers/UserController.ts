@@ -173,6 +173,36 @@ export class AuthController {
     }
   });
 
+  // Signup placeholder (for Azure AD B2C integration)
+  public signup = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { email, password, name, preferences } = req.body;
+
+    // TODO: Implement Azure AD B2C user registration
+    // For now, return mock response for any signup attempt
+    if (email && password && name) {
+      const userId = 'user-' + Math.random().toString(36).substr(2, 9);
+      const token = 'mock-token-' + Math.random().toString(36).substr(2, 9);
+      
+      res.status(201).json({
+        message: 'Signup successful',
+        token: token,
+        user: {
+          id: userId,
+          email: email,
+          name: name,
+          preferences: preferences || {
+            experienceLevel: 'intermediate',
+            preferredDifficulty: ['intermediate'],
+            maxHikeDistance: 10,
+            fitnessLevel: 'moderate',
+          },
+        },
+      });
+    } else {
+      throw createError('Email, password, and name are required', 400);
+    }
+  });
+
   // Logout placeholder
   public logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // TODO: Implement proper token invalidation with Azure AD B2C

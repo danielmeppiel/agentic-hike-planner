@@ -2,7 +2,26 @@ import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/r
 import { useAuthStore } from '../stores/authStore';
 
 export function ChatHeader() {
-  const { user, isAuthenticated, signOut } = useAuthStore();
+  const { user, isAuthenticated, signOut, signup } = useAuthStore();
+
+  const handleSignIn = () => {
+    // TODO: Open sign in modal
+    console.log('Sign In clicked');
+  };
+
+  const handleSignUp = async () => {
+    // TODO: Open sign up modal - for now, demo with mock signup
+    try {
+      await signup({
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+      });
+      console.log('Sign Up successful');
+    } catch (error) {
+      console.error('Sign Up failed:', error);
+    }
+  };
 
   return (
     <header className="glass-dark border-b border-white/10">
@@ -46,12 +65,20 @@ export function ChatHeader() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => {/* TODO: Open auth modal */}}
-              className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-            >
-              Sign In
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleSignIn}
+                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={handleSignUp}
+                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              >
+                Sign Up
+              </button>
+            </div>
           )}
         </div>
       </div>

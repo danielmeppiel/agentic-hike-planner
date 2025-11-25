@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService } from '../services/authService';
-import type { UserProfile, LoginCredentials } from '../types';
+import type { UserProfile, LoginCredentials, SignupCredentials } from '../types';
 
 interface AuthStore {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
+  signup: (credentials: SignupCredentials) => Promise<void>;
   logout: () => void;
   signOut: () => void; // Alias for logout to match chat interface
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
@@ -28,6 +29,18 @@ export const useAuthStore = create<AuthStore>()(
           set({ user, isAuthenticated: true, isLoading: false });
         } catch (error) {
           console.error('Login error:', error);
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      signup: async (credentials) => {
+        set({ isLoading: true });
+        try {
+          const user = await authService.signup(credentials);
+          set({ user, isAuthenticated: true, isLoading: false });
+        } catch (error) {
+          console.error('Signup error:', error);
           set({ isLoading: false });
           throw error;
         }
