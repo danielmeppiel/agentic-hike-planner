@@ -6,6 +6,7 @@ import { QuickActions } from './QuickActions';
 import ConversationStarters from './ConversationStarters';
 import { TypingIndicator } from './TypingIndicator';
 import { useChatStore } from '../stores/chatStore';
+import { useAuthStore } from '../stores/authStore';
 import type { Message } from '../types';
 
 export function ChatInterface() {
@@ -14,7 +15,8 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
-  const { messages, addMessage, isAuthenticated } = useChatStore();
+  const { messages, addMessage } = useChatStore();
+  const { isAuthenticated } = useAuthStore();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

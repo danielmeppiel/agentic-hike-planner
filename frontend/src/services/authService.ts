@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { UserProfile, LoginCredentials } from '../types';
+import type { UserProfile, LoginCredentials, SignUpCredentials } from '../types';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<UserProfile> {
@@ -24,6 +24,32 @@ export const authService = {
         },
       };
       localStorage.setItem('auth-token', 'mock-token-123');
+      return mockUser;
+    }
+  },
+
+  async signUp(credentials: SignUpCredentials): Promise<UserProfile> {
+    try {
+      const { data } = await apiClient.post('/auth/signup', credentials);
+      if (data.token) {
+        localStorage.setItem('auth-token', data.token);
+      }
+      return data.user || data.data || data;
+    } catch (error) {
+      console.error('Signup failed:', error);
+      // Return mock user as fallback
+      const mockUser: UserProfile = {
+        id: 'user' + Date.now(),
+        email: credentials.email,
+        name: credentials.name,
+        avatar: '/api/placeholder/100/100',
+        preferences: {
+          difficultyLevel: 'beginner',
+          maxDistance: 5,
+          preferredTerrains: ['Forest'],
+        },
+      };
+      localStorage.setItem('auth-token', 'mock-token-' + Date.now());
       return mockUser;
     }
   },

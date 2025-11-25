@@ -173,6 +173,63 @@ export class AuthController {
     }
   });
 
+  // Sign up placeholder
+  public signUp = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { name, email, password, confirmPassword } = req.body;
+
+    // Basic validation
+    if (!name || !email || !password || !confirmPassword) {
+      throw createError('All fields are required', 400);
+    }
+
+    if (password !== confirmPassword) {
+      throw createError('Passwords do not match', 400);
+    }
+
+    if (password.length < 6) {
+      throw createError('Password must be at least 6 characters long', 400);
+    }
+
+    // Check if user already exists
+    const existingUser = mockUserProfiles.find(profile => profile.email === email);
+    if (existingUser) {
+      throw createError('User with this email already exists', 409);
+    }
+
+    // Create new user
+    const newUser: UserProfile = {
+      id: 'user-' + Date.now(),
+      email,
+      name,
+      preferences: {
+        experienceLevel: 'beginner',
+        preferredDifficulty: ['beginner'],
+        maxHikeDistance: 5,
+        fitnessLevel: 'moderate',
+      },
+      statistics: {
+        tripsCompleted: 0,
+        totalMiles: 0,
+        favoriteTrails: [],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Add to mock database
+    mockUserProfiles.push(newUser);
+
+    res.status(201).json({
+      message: 'Account created successfully',
+      token: 'mock-token-' + Date.now(),
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+      },
+    });
+  });
+
   // Logout placeholder
   public logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     // TODO: Implement proper token invalidation with Azure AD B2C
