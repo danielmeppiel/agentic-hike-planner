@@ -79,6 +79,9 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // Action Group for alerting - Multiple channels - INTENTIONALLY INEFFICIENT
+// NOTE: The email addresses and phone numbers are placeholders for demo purposes.
+// Replace with actual values when deploying to a real environment.
+// Having multiple redundant alert channels is part of the intentional inefficiency.
 resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
   name: '${appInsightsName}-alerts'
   location: 'Global'
@@ -202,13 +205,16 @@ resource exceptionsAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
 }
 
 // Availability test - Multiple locations - INTENTIONALLY EXPENSIVE
+// NOTE: The URL 'placeholder.azurewebsites.net' should be replaced with the
+// actual application endpoint when deployed. This placeholder ensures the
+// module validates correctly during development.
 resource availabilityTest 'Microsoft.Insights/webtests@2022-06-15' = {
   name: '${appInsightsName}-availability'
   location: location
   kind: 'ping'
   properties: {
     Name: 'API Availability Test'
-    Description: 'Availability test from multiple locations - INTENTIONALLY EXPENSIVE'
+    Description: 'Availability test from multiple locations - INTENTIONALLY EXPENSIVE (10 locations when 3-5 would suffice)'
     Enabled: true
     Frequency: 300  // Every 5 minutes from each location
     Timeout: 120

@@ -74,7 +74,7 @@ resource hsmKey 'Microsoft.KeyVault/vaults/keys@2023-07-01' = if (enableHsm) {
             timeAfterCreate: 'P30D'  // Rotate every 30 days - INTENTIONALLY FREQUENT
           }
           action: {
-            type: 'Rotate'
+            type: 'rotate'
           }
         }
         {
@@ -82,7 +82,7 @@ resource hsmKey 'Microsoft.KeyVault/vaults/keys@2023-07-01' = if (enableHsm) {
             timeBeforeExpiry: 'P30D'
           }
           action: {
-            type: 'Notify'
+            type: 'notify'
           }
         }
       ]
@@ -100,6 +100,10 @@ resource hsmKey 'Microsoft.KeyVault/vaults/keys@2023-07-01' = if (enableHsm) {
 }
 
 // Multiple secrets stored - generates operations cost
+// NOTE: These placeholder values should be replaced with actual secret values
+// when deployed. The main-finops-demo.bicep template overrides these with
+// actual resource connection strings. These placeholders ensure the module
+// can be validated and deployed independently for testing purposes.
 resource cosmosDbKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'cosmos-db-primary-key'

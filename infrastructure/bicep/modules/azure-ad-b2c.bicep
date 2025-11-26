@@ -16,12 +16,14 @@ param countryCode string = 'US'
 
 // Azure AD B2C Tenant - Premium P1 tier - INTENTIONALLY INEFFICIENT
 // Free tier supports up to 50,000 MAU which is more than enough for demo
+// NOTE: Azure AD B2C tenant creation is typically done via Azure Portal or Azure CLI
+// This resource definition represents the desired configuration
 resource b2cTenant 'Microsoft.AzureActiveDirectory/b2cDirectories@2021-04-01' = {
   name: '${b2cTenantName}.onmicrosoft.com'
   location: location
   sku: {
-    name: 'PremiumP1'  // INTENTIONALLY INEFFICIENT - Free tier would suffice
-    tier: 'A0'
+    name: 'Standard'  // B2C uses Standard SKU name
+    tier: 'A0'        // A0 tier, then upgrade to P1 features via Portal
   }
   properties: {
     createTenantProperties: {

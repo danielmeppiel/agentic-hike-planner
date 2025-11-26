@@ -14,9 +14,6 @@
     "cosmosDbThroughputMode": {
       "value": "provisioned"
     },
-    "budgetAlertEmail": {
-      "value": "demo@example.com"
-    },
     "enablePhase5Services": {
       "value": true
     }
@@ -52,6 +49,7 @@
       "Consolidate storage ($45 savings)",
       "Remove Redis ($45 savings)",
       "Consumption Container Apps ($400 savings)"
-    ]
+    ],
+    "note": "Budget alert email should be passed via deployment command, not stored in parameter files"
   }
 }

@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.36.1.42791",
-      "templateHash": "17231432335196398694"
+      "version": "0.38.33.27573",
+      "templateHash": "17828964688646513532"
     }
   },
   "parameters": {
@@ -66,8 +66,8 @@
     "resourceNames": {
       "cosmosDbAccount": "[format('{0}-cosmos-{1}-{2}', parameters('appName'), parameters('environment'), variables('uniqueSuffix'))]",
       "keyVault": "[format('hkv-{0}-{1}', parameters('environment'), variables('uniqueSuffix'))]",
-      "appServicePlan": "[format('{0}-plan-{1}-{2}', parameters('appName'), parameters('environment'), variables('uniqueSuffix'))]",
-      "appService": "[format('{0}-api-{1}-{2}', parameters('appName'), parameters('environment'), variables('uniqueSuffix'))]",
+      "containerAppsEnvironment": "[format('{0}-cae-{1}-{2}', parameters('appName'), parameters('environment'), variables('uniqueSuffix'))]",
+      "containerApp": "[format('{0}-api-{1}-{2}', parameters('appName'), parameters('environment'), variables('uniqueSuffix'))]",
       "budget": "[format('{0}-budget-{1}', parameters('appName'), parameters('environment'))]"
     }
   },
@@ -108,7 +108,7 @@
       "apiVersion": "2023-07-01",
       "name": "[format('{0}/{1}', variables('resourceNames').keyVault, 'cosmos-db-primary-key')]",
       "properties": {
-        "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbPrimaryKey]",
+        "value": "[listOutputsWithSecureValues('cosmosDb', '2025-04-01').cosmosDbPrimaryKey]",
         "contentType": "text/plain"
       },
       "dependsOn": [
@@ -121,7 +121,7 @@
       "apiVersion": "2023-07-01",
       "name": "[format('{0}/{1}', variables('resourceNames').keyVault, 'cosmos-db-endpoint')]",
       "properties": {
-        "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbEndpoint]",
+        "value": "[reference('cosmosDb').outputs.cosmosDbEndpoint.value]",
         "contentType": "text/plain"
       },
       "dependsOn": [
@@ -131,7 +131,7 @@
     },
     "cosmosDb": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "cosmosDb-deployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -168,8 +168,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.36.1.42791",
-              "templateHash": "10334324031889423984"
+              "version": "0.38.33.27573",
+              "templateHash": "9317265570666943694"
             }
           },
           "parameters": {
@@ -381,154 +381,36 @@
         }
       }
     },
-    "appServicePlan": {
+    "containerApps": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "appServicePlan-deployment",
+      "apiVersion": "2025-04-01",
+      "name": "containerApps-deployment",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
         },
         "mode": "Incremental",
         "parameters": {
-          "appServicePlanName": {
-            "value": "[variables('resourceNames').appServicePlan]"
+          "containerAppsEnvironmentName": {
+            "value": "[variables('resourceNames').containerAppsEnvironment]"
+          },
+          "containerAppName": {
+            "value": "[variables('resourceNames').containerApp]"
           },
           "location": {
             "value": "[parameters('location')]"
           },
           "environment": {
             "value": "[parameters('environment')]"
-          },
-          "skuName": {
-            "value": "S3"
-          },
-          "skuCapacity": {
-            "value": 1
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.36.1.42791",
-              "templateHash": "8694164402386487558"
-            }
-          },
-          "parameters": {
-            "appServicePlanName": {
-              "type": "string",
-              "metadata": {
-                "description": "The name of the App Service Plan"
-              }
-            },
-            "location": {
-              "type": "string",
-              "defaultValue": "[resourceGroup().location]",
-              "metadata": {
-                "description": "The location for the App Service Plan"
-              }
-            },
-            "environment": {
-              "type": "string",
-              "metadata": {
-                "description": "The environment (dev, staging, prod)"
-              }
-            },
-            "skuName": {
-              "type": "string",
-              "defaultValue": "S3",
-              "metadata": {
-                "description": "The SKU name for the App Service Plan"
-              }
-            },
-            "skuCapacity": {
-              "type": "int",
-              "defaultValue": 1,
-              "metadata": {
-                "description": "The SKU capacity"
-              }
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.Web/serverfarms",
-              "apiVersion": "2023-01-01",
-              "name": "[parameters('appServicePlanName')]",
-              "location": "[parameters('location')]",
-              "sku": {
-                "name": "[parameters('skuName')]",
-                "capacity": "[parameters('skuCapacity')]"
-              },
-              "kind": "app",
-              "properties": {
-                "reserved": false
-              },
-              "tags": {
-                "Environment": "[parameters('environment')]",
-                "Application": "HikePlanner",
-                "CostCenter": "Demo"
-              }
-            }
-          ],
-          "outputs": {
-            "appServicePlanId": {
-              "type": "string",
-              "metadata": {
-                "description": "The resource ID of the App Service Plan"
-              },
-              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
-            },
-            "appServicePlanName": {
-              "type": "string",
-              "metadata": {
-                "description": "The name of the App Service Plan"
-              },
-              "value": "[parameters('appServicePlanName')]"
-            },
-            "appServicePlanSku": {
-              "type": "object",
-              "metadata": {
-                "description": "The SKU of the App Service Plan"
-              },
-              "value": "[reference(resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName')), '2023-01-01', 'full').sku]"
-            }
-          }
-        }
-      }
-    },
-    "appService": {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "appService-deployment",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "appServiceName": {
-            "value": "[variables('resourceNames').appService]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "environment": {
-            "value": "[parameters('environment')]"
-          },
-          "appServicePlanId": {
-            "value": "[reference('appServicePlan').outputs.appServicePlanId.value]"
           },
           "keyVaultName": {
             "value": "[variables('resourceNames').keyVault]"
           },
           "cosmosDbEndpoint": {
-            "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbEndpoint]"
+            "value": "[reference('cosmosDb').outputs.cosmosDbEndpoint.value]"
           },
           "cosmosDbDatabaseName": {
-            "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').databaseName]"
+            "value": "[reference('cosmosDb').outputs.databaseName.value]"
           }
         },
         "template": {
@@ -537,22 +419,28 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.36.1.42791",
-              "templateHash": "8647406744295223041"
+              "version": "0.38.33.27573",
+              "templateHash": "10140172277115042668"
             }
           },
           "parameters": {
-            "appServiceName": {
+            "containerAppsEnvironmentName": {
               "type": "string",
               "metadata": {
-                "description": "The name of the App Service"
+                "description": "The name of the Container Apps environment"
+              }
+            },
+            "containerAppName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Container App"
               }
             },
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]",
               "metadata": {
-                "description": "The location for the App Service"
+                "description": "The location for the Container Apps"
               }
             },
             "environment": {
@@ -561,87 +449,180 @@
                 "description": "The environment (dev, staging, prod)"
               }
             },
-            "appServicePlanId": {
-              "type": "string",
-              "metadata": {
-                "description": "The resource ID of the App Service Plan"
-              }
-            },
             "keyVaultName": {
               "type": "string",
               "metadata": {
-                "description": "The Key Vault name for storing secrets"
+                "description": "Key Vault name for storing secrets"
               }
             },
             "cosmosDbEndpoint": {
               "type": "string",
               "metadata": {
-                "description": "The Cosmos DB endpoint"
+                "description": "Cosmos DB endpoint"
               }
             },
             "cosmosDbDatabaseName": {
               "type": "string",
               "metadata": {
-                "description": "The name of the Cosmos DB database"
+                "description": "Cosmos DB database name"
               }
             }
           },
           "resources": [
             {
-              "type": "Microsoft.Web/sites",
-              "apiVersion": "2023-01-01",
-              "name": "[parameters('appServiceName')]",
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}-logs', parameters('containerAppsEnvironmentName'))]",
               "location": "[parameters('location')]",
-              "kind": "app",
               "properties": {
-                "serverFarmId": "[parameters('appServicePlanId')]",
-                "httpsOnly": true,
-                "redundancyMode": "None",
-                "publicNetworkAccess": "Enabled",
-                "siteConfig": {
-                  "nodeVersion": "~18",
-                  "alwaysOn": true,
-                  "ftpsState": "FtpsOnly",
-                  "minTlsVersion": "1.2",
-                  "http20Enabled": true,
-                  "appSettings": [
-                    {
-                      "name": "NODE_ENV",
-                      "value": "[if(equals(parameters('environment'), 'prod'), 'production', 'development')]"
-                    },
-                    {
-                      "name": "AZURE_COSMOS_DB_ENDPOINT",
-                      "value": "[parameters('cosmosDbEndpoint')]"
-                    },
-                    {
-                      "name": "AZURE_COSMOS_DB_DATABASE",
-                      "value": "[parameters('cosmosDbDatabaseName')]"
-                    },
-                    {
-                      "name": "AZURE_COSMOS_DB_KEY",
-                      "value": "[format('@Microsoft.KeyVault(SecretUri=https://{0}.vault.azure.net/secrets/cosmos-db-primary-key/)', parameters('keyVaultName'))]"
-                    },
-                    {
-                      "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                      "value": "~18"
-                    },
-                    {
-                      "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
-                      "value": "true"
-                    }
-                  ]
+                "sku": {
+                  "name": "PerGB2018"
                 },
-                "clientAffinityEnabled": false
+                "retentionInDays": "[if(equals(parameters('environment'), 'prod'), 730, 180)]",
+                "workspaceCapping": {
+                  "dailyQuotaGb": 50
+                },
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
               },
               "tags": {
                 "Environment": "[parameters('environment')]",
                 "Application": "HikePlanner",
                 "CostCenter": "Demo",
-                "ServiceTier": "Backend"
+                "CostOptimization": "Inefficient-Demo",
+                "ServiceTier": "Monitoring"
+              }
+            },
+            {
+              "type": "Microsoft.App/managedEnvironments",
+              "apiVersion": "2024-03-01",
+              "name": "[parameters('containerAppsEnvironmentName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "appLogsConfiguration": {
+                  "destination": "log-analytics",
+                  "logAnalyticsConfiguration": {
+                    "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('containerAppsEnvironmentName'))), '2023-09-01').customerId]",
+                    "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('containerAppsEnvironmentName'))), '2023-09-01').primarySharedKey]"
+                  }
+                },
+                "zoneRedundant": "[equals(parameters('environment'), 'prod')]",
+                "infrastructureResourceGroup": "[format('{0}-infra-rg', parameters('containerAppsEnvironmentName'))]",
+                "workloadProfiles": [
+                  {
+                    "name": "Consumption",
+                    "workloadProfileType": "Consumption"
+                  },
+                  {
+                    "name": "DedicatedD4",
+                    "workloadProfileType": "D4",
+                    "minimumCount": "[if(equals(parameters('environment'), 'dev'), 1, if(equals(parameters('environment'), 'staging'), 2, 3))]",
+                    "maximumCount": "[if(equals(parameters('environment'), 'dev'), 3, if(equals(parameters('environment'), 'staging'), 5, 10))]"
+                  }
+                ]
               },
+              "tags": {
+                "Environment": "[parameters('environment')]",
+                "Application": "HikePlanner",
+                "CostCenter": "Demo",
+                "CostOptimization": "Inefficient-Demo",
+                "ServiceTier": "Compute"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('containerAppsEnvironmentName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2024-03-01",
+              "name": "[parameters('containerAppName')]",
+              "location": "[parameters('location')]",
               "identity": {
                 "type": "SystemAssigned"
-              }
+              },
+              "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppsEnvironmentName'))]",
+                "workloadProfileName": "DedicatedD4",
+                "configuration": {
+                  "activeRevisionsMode": "Single",
+                  "ingress": {
+                    "external": true,
+                    "targetPort": 3000,
+                    "allowInsecure": false,
+                    "traffic": [
+                      {
+                        "weight": 100,
+                        "latestRevision": true
+                      }
+                    ]
+                  },
+                  "secrets": [
+                    {
+                      "name": "cosmos-db-key",
+                      "keyVaultUrl": "[format('https://{0}.{1}/secrets/cosmos-db-primary-key', parameters('keyVaultName'), environment().suffixes.keyvaultDns)]",
+                      "identity": "system"
+                    }
+                  ]
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "hike-planner-api",
+                      "image": "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest",
+                      "resources": {
+                        "cpu": "[json('2.0')]",
+                        "memory": "4Gi"
+                      },
+                      "env": [
+                        {
+                          "name": "NODE_ENV",
+                          "value": "[if(equals(parameters('environment'), 'prod'), 'production', 'development')]"
+                        },
+                        {
+                          "name": "AZURE_COSMOS_DB_ENDPOINT",
+                          "value": "[parameters('cosmosDbEndpoint')]"
+                        },
+                        {
+                          "name": "AZURE_COSMOS_DB_DATABASE",
+                          "value": "[parameters('cosmosDbDatabaseName')]"
+                        },
+                        {
+                          "name": "AZURE_COSMOS_DB_KEY",
+                          "secretRef": "cosmos-db-key"
+                        },
+                        {
+                          "name": "PORT",
+                          "value": "3000"
+                        }
+                      ]
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": "[if(equals(parameters('environment'), 'dev'), 2, if(equals(parameters('environment'), 'staging'), 3, 5))]",
+                    "maxReplicas": "[if(equals(parameters('environment'), 'dev'), 10, if(equals(parameters('environment'), 'staging'), 20, 50))]",
+                    "rules": [
+                      {
+                        "name": "http-scaling",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "10"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "tags": {
+                "Environment": "[parameters('environment')]",
+                "Application": "HikePlanner",
+                "CostCenter": "Demo",
+                "CostOptimization": "Inefficient-Demo",
+                "ServiceTier": "Backend"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppsEnvironmentName'))]"
+              ]
             },
             {
               "type": "Microsoft.KeyVault/vaults/accessPolicies",
@@ -651,7 +632,7 @@
                 "accessPolicies": [
                   {
                     "tenantId": "[subscription().tenantId]",
-                    "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('appServiceName')), '2023-01-01', 'full').identity.principalId]",
+                    "objectId": "[reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2024-03-01', 'full').identity.principalId]",
                     "permissions": {
                       "secrets": [
                         "get",
@@ -662,44 +643,86 @@
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
               ]
             }
           ],
           "outputs": {
-            "appServiceName": {
+            "containerAppFqdn": {
               "type": "string",
               "metadata": {
-                "description": "The name of the App Service"
+                "description": "The FQDN of the Container App"
               },
-              "value": "[parameters('appServiceName')]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2024-03-01').configuration.ingress.fqdn]"
             },
-            "appServiceDefaultHostname": {
+            "containerAppId": {
               "type": "string",
               "metadata": {
-                "description": "The default hostname of the App Service"
+                "description": "The resource ID of the Container App"
               },
-              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('appServiceName')), '2023-01-01').defaultHostName]"
+              "value": "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
             },
-            "appServicePrincipalId": {
+            "containerAppName": {
               "type": "string",
               "metadata": {
-                "description": "The principal ID of the App Service managed identity"
+                "description": "The name of the Container App"
               },
-              "value": "[reference(resourceId('Microsoft.Web/sites', parameters('appServiceName')), '2023-01-01', 'full').identity.principalId]"
+              "value": "[parameters('containerAppName')]"
             },
-            "appServiceId": {
+            "containerAppPrincipalId": {
               "type": "string",
               "metadata": {
-                "description": "The resource ID of the App Service"
+                "description": "The principal ID of the Container App managed identity"
               },
-              "value": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2024-03-01', 'full').identity.principalId]"
+            },
+            "containerAppsEnvironmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Container Apps Environment"
+              },
+              "value": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppsEnvironmentName'))]"
+            },
+            "containerAppsEnvironmentName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Container Apps Environment"
+              },
+              "value": "[parameters('containerAppsEnvironmentName')]"
+            },
+            "logAnalyticsWorkspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "The resource ID of the Log Analytics workspace"
+              },
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('containerAppsEnvironmentName')))]"
+            },
+            "costOptimizationSummary": {
+              "type": "object",
+              "metadata": {
+                "description": "Container Apps cost optimization summary"
+              },
+              "value": {
+                "inefficiencies": [
+                  "Dedicated D4 workload profile instead of Consumption",
+                  "Always-on minimum replicas (2-5) instead of scale-to-zero",
+                  "Oversized CPU (2.0 vCPU) and memory (4Gi) allocation",
+                  "Expensive Log Analytics with 50GB daily quota and long retention",
+                  "Low concurrency threshold forcing more replicas",
+                  "Zone redundancy in non-production environments"
+                ],
+                "monthlyOptimizationPotential": {
+                  "current": "[if(equals(parameters('environment'), 'dev'), 450, if(equals(parameters('environment'), 'staging'), 650, 1200))]",
+                  "optimized": "[if(equals(parameters('environment'), 'dev'), 50, if(equals(parameters('environment'), 'staging'), 75, 150))]",
+                  "savings": "[if(equals(parameters('environment'), 'dev'), 400, if(equals(parameters('environment'), 'staging'), 575, 1050))]",
+                  "savingsPercentage": "[if(equals(parameters('environment'), 'dev'), 89, if(equals(parameters('environment'), 'staging'), 88, 88))]"
+                }
+              }
             }
           }
         }
       },
       "dependsOn": [
-        "appServicePlan",
         "cosmosDb",
         "cosmosDbEndpointSecret",
         "cosmosDbPrimaryKeySecret",
@@ -708,7 +731,7 @@
     },
     "budgetAlerts": {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2025-04-01",
       "name": "budgetAlerts-deployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -732,8 +755,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.36.1.42791",
-              "templateHash": "8520178938126086792"
+              "version": "0.38.33.27573",
+              "templateHash": "7786260836601520834"
             }
           },
           "parameters": {
@@ -900,47 +923,47 @@
     },
     "cosmosDbEndpoint": {
       "type": "string",
-      "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbEndpoint]"
+      "value": "[reference('cosmosDb').outputs.cosmosDbEndpoint.value]"
     },
     "cosmosDbAccountName": {
       "type": "string",
-      "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbAccountName]"
+      "value": "[reference('cosmosDb').outputs.cosmosDbAccountName.value]"
     },
     "cosmosDbDatabaseName": {
       "type": "string",
-      "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').databaseName]"
+      "value": "[reference('cosmosDb').outputs.databaseName.value]"
     },
     "cosmosDbPrimaryKey": {
       "type": "securestring",
-      "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbPrimaryKey]"
+      "value": "[listOutputsWithSecureValues('cosmosDb', '2025-04-01').cosmosDbPrimaryKey]"
     },
     "cosmosDbConnectionString": {
       "type": "securestring",
-      "value": "[listOutputsWithSecureValues(resourceId('Microsoft.Resources/deployments', 'cosmosDb-deployment'), '2022-09-01').cosmosDbConnectionString]"
+      "value": "[listOutputsWithSecureValues('cosmosDb', '2025-04-01').cosmosDbConnectionString]"
     },
     "keyVaultName": {
       "type": "string",
       "value": "[variables('resourceNames').keyVault]"
     },
-    "appServicePlanName": {
+    "containerAppsEnvironmentName": {
       "type": "string",
-      "value": "[reference('appServicePlan').outputs.appServicePlanName.value]"
+      "value": "[reference('containerApps').outputs.containerAppsEnvironmentName.value]"
     },
-    "appServicePlanSku": {
+    "containerAppName": {
+      "type": "string",
+      "value": "[reference('containerApps').outputs.containerAppName.value]"
+    },
+    "containerAppUrl": {
+      "type": "string",
+      "value": "[format('https://{0}', reference('containerApps').outputs.containerAppFqdn.value)]"
+    },
+    "containerAppPrincipalId": {
+      "type": "string",
+      "value": "[reference('containerApps').outputs.containerAppPrincipalId.value]"
+    },
+    "costOptimizationSummary": {
       "type": "object",
-      "value": "[reference('appServicePlan').outputs.appServicePlanSku.value]"
-    },
-    "appServiceName": {
-      "type": "string",
-      "value": "[reference('appService').outputs.appServiceName.value]"
-    },
-    "appServiceUrl": {
-      "type": "string",
-      "value": "[format('https://{0}', reference('appService').outputs.appServiceDefaultHostname.value)]"
-    },
-    "appServicePrincipalId": {
-      "type": "string",
-      "value": "[reference('appService').outputs.appServicePrincipalId.value]"
+      "value": "[reference('containerApps').outputs.costOptimizationSummary.value]"
     },
     "budgetName": {
       "type": "string",

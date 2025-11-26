@@ -3,6 +3,10 @@
 # ============================================================================
 # This file contains all Phase 5 resources for the FinOps cost optimization demo
 # All resources are INTENTIONALLY INEFFICIENT to demonstrate optimization opportunities
+#
+# NOTE: This file is designed to be used together with main_full.tf which provides
+# the base resources (azurerm_linux_web_app.main, azurerm_cosmosdb_account.main, etc.)
+# ============================================================================
 
 # ============================================================================
 # APPLICATION GATEWAY - INTENTIONALLY INEFFICIENT
