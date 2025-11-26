@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "dev"
+    },
+    "appName": {
+      "value": "hike-planner"
+    },
+    "enableCosmosDbFreeTier": {
+      "value": false
+    },
+    "cosmosDbThroughputMode": {
+      "value": "provisioned"
+    },
+    "budgetAlertEmail": {
+      "value": "demo@example.com"
+    },
+    "enablePhase5Services": {
+      "value": true
+    }
+  },
+  "metadata": {
+    "description": "Phase 5: Complete Inefficient Infrastructure parameters for FinOps demo",
+    "phase": "5",
+    "estimatedMonthlyCost": "$990-1020",
+    "optimizedMonthlyCost": "$118",
+    "potentialSavings": "88%",
+    "servicesDeployed": [
+      "Cosmos DB (1000 RU/s provisioned)",
+      "Container Apps (D4 dedicated profile)",
+      "3x Storage Accounts (Hot tier only)",
+      "Redis Cache (Basic C1)",
+      "Key Vault (Standard + Premium)",
+      "Application Gateway (Standard v2)",
+      "Premium Functions (EP1)",
+      "Azure CDN (Premium with WAF)",
+      "Load Testing (Continuous)",
+      "Application Insights (5GB/day, 730 days retention)",
+      "Azure AD B2C (Premium P1 - manual setup)"
+    ],
+    "optimizationOpportunities": [
+      "Remove Application Gateway ($50 savings)",
+      "Switch to Consumption Functions ($140 savings)",
+      "Remove CDN ($20 savings)",
+      "On-demand Load Testing ($22 savings)",
+      "Reduce App Insights ($105 savings)",
+      "Standard Key Vault ($10 savings)",
+      "Free B2C tier ($30 savings)",
+      "Serverless Cosmos DB ($35 savings)",
+      "Consolidate storage ($45 savings)",
+      "Remove Redis ($45 savings)",
+      "Consumption Container Apps ($400 savings)"
+    ]
+  }
+}

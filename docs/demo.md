@@ -54,22 +54,38 @@ The demo application includes the following intentional inefficiencies designed 
 
 ### Phase 1: Environment Setup (Budget-Conscious)
 
-1. **Deploy Budget-Friendly Inefficient Infrastructure**
+1. **Deploy Phase 5 Complete Inefficient Infrastructure**
    ```bash
-   # Deploy the intentionally inefficient but affordable configuration
+   # Deploy the full intentionally inefficient infrastructure (Phase 5)
    az deployment group create \
      --resource-group rg-hike-planner-demo \
-     --template-file infrastructure/bicep/demo-budget-inefficient.bicep \
-     --parameters @infrastructure/bicep/demo-budget-parameters.json
+     --template-file infrastructure/bicep/main-finops-demo.bicep \
+     --parameters @infrastructure/bicep/parameters/dev-phase5-complete.json
+   ```
+
+   Or deploy step by step:
+   ```bash
+   # Phase 1-4: Core infrastructure
+   az deployment group create \
+     --resource-group rg-hike-planner-demo \
+     --template-file infrastructure/bicep/main-finops-demo.bicep \
+     --parameters @infrastructure/bicep/parameters/dev-finops-demo.json \
+     --parameters enablePhase5Services=false
+   
+   # Phase 5: Complete infrastructure
+   az deployment group create \
+     --resource-group rg-hike-planner-demo \
+     --template-file infrastructure/bicep/main-finops-demo.bicep \
+     --parameters @infrastructure/bicep/parameters/dev-phase5-complete.json
    ```
 
 2. **Set Up Cost Alerts** (Recommended for demos)
    ```bash
    # Create budget alerts to prevent runaway costs
-   # Inefficient architecture: ~$30/day, Optimized: ~$3/day
+   # Inefficient architecture: ~$33/day, Optimized: ~$4/day
    az consumption budget create \
      --budget-name "hike-planner-demo-budget" \
-     --amount 100 \
+     --amount 150 \
      --time-grain Monthly \
      --time-period-start-date $(date +%Y-%m-01) \
      --time-period-end-date $(date -d "$(date +%Y-%m-01) +1 month -1 day" +%Y-%m-%d)
@@ -127,62 +143,66 @@ The demo application includes the following intentional inefficiencies designed 
    - Monitor application performance post-optimization
    - Validate estimated savings accuracy
 
-## 📊 Expected Optimization Opportunities (Budget-Friendly Scale)
+## 📊 Expected Optimization Opportunities (Phase 5 Complete)
 
 The workflow should identify these specific opportunities with detailed cost impact analysis:
 
-### Monthly Cost Transformation Summary
+### Monthly Cost Transformation Summary (Phase 5)
 | Architecture | Monthly Cost | Daily Cost | Resource Count | Cost per Resource |
 |--------------|--------------|------------|----------------|------------------|
-| **Inefficient** | ~$900 | ~$30 | 15+ services | ~$60/service |
-| **Optimized** | ~$85 | ~$3 | 8 services | ~$11/service |
-| **📈 Improvement** | **90% reduction** | **90% reduction** | **47% fewer** | **82% lower** |
+| **Inefficient** | ~$1,020 | ~$33 | 18+ services | ~$57/service |
+| **Optimized** | ~$118 | ~$4 | 8 services | ~$15/service |
+| **📈 Improvement** | **88% reduction** | **88% reduction** | **56% fewer** | **74% lower** |
 
 ### High Priority (Value: 8-10, Risk: 1-4)
 1. **Remove Application Gateway**: Complete removal (~$50/month savings)
-2. **App Service Right-sizing**: Standard S3 → Basic B2 (~$120/month savings)
-3. **Functions Plan**: Premium EP1 → Consumption (~$145/month)
-4. **Database Optimization**: Remove SQL DB, optimize Cosmos (~$110/month)
+2. **Container Apps Right-sizing**: D4 Dedicated → Consumption (~$400/month savings)
+3. **Functions Plan**: Premium EP1 → Consumption (~$140/month savings)
+4. **Remove CDN**: Complete removal - SWA has built-in CDN (~$20/month savings)
+5. **Application Insights**: 5GB/day → 1GB/day, 730→90 days retention (~$105/month savings)
 
 ### Medium Priority (Value: 5-7, Risk: 1-6)
-5. **Consolidate Storage Accounts**: 3 → 1 with lifecycle policies (~$45/month)
-6. **Remove Redundant Redis Cache**: Basic C1 removal (~$45/month)
-7. **Remove Unnecessary CDN**: Complete removal (~$20/month)
-8. **Non-prod Environment Scheduling**: 24/7 → 8/5 (~$160/month)
-9. **Azure AD B2C**: Premium P1 → Free tier (~$15/month)
+6. **Consolidate Storage Accounts**: 3 → 1 with lifecycle policies (~$45/month savings)
+7. **Remove Redundant Redis Cache**: Basic C1 removal (~$45/month savings)
+8. **Azure AD B2C**: Premium P1 → Free tier (~$30/month savings)
+9. **Key Vault**: Premium → Standard tier (~$10/month savings)
+10. **Load Testing**: Continuous → On-demand (~$22/month savings)
 
 ### Low Priority (Value: 1-4 or Risk: 7-10)
-10. **Application Insights Optimization**: Reduce ingestion (~$20/month)
-11. **Key Vault Operations**: Optimize operation frequency (~$15/month)
-12. **Load Testing Scheduling**: Continuous → On-demand (~$25/month)
-13. **Storage Tier Optimization**: Implement Hot/Cool/Archive policies (~$15/month)
+11. **Cosmos DB**: Provisioned 1000 RU/s → Serverless (~$35/month savings)
+12. **Storage Tier Optimization**: Hot-only → Hot/Cool/Archive policies (~$15/month savings)
+13. **Non-prod Environment Scheduling**: 24/7 → 8/5 for dev/staging
 
-### Optimization Impact by Phase
-| Phase | Strategy | Current Cost | Optimized Cost | Savings | % Reduction |
-|-------|----------|--------------|----------------|---------|-------------|
-| **Phase 1** | Remove Redundancies | $900 | $650 | $250 | 28% |
-| **Phase 2** | Right-size Resources | $650 | $200 | $450 | 69% |
-| **Phase 3** | Consumption Models | $200 | $85 | $115 | 58% |
-| **🎯 Total** | **Complete Transformation** | **$900** | **$85** | **$815** | **90%** |
+### Optimization Impact by Category (Phase 5 Complete)
+| Category | Services | Inefficient Cost | Optimized Cost | Savings | % Reduction |
+|----------|----------|------------------|----------------|---------|-------------|
+| **Compute** | Container Apps, Functions | $595 | $55 | $540 | 91% |
+| **Database** | Cosmos DB | $60 | $25 | $35 | 58% |
+| **Storage** | 3 Storage Accounts | $60 | $15 | $45 | 75% |
+| **Network** | App Gateway, CDN | $70 | $0 | $70 | 100% |
+| **Caching** | Redis Cache | $45 | $0 | $45 | 100% |
+| **Monitoring** | App Insights, Load Test | $145 | $18 | $127 | 88% |
+| **Security** | Key Vault Premium, B2C P1 | $45 | $5 | $40 | 89% |
+| **🎯 Total** | **All Services** | **$1,020** | **$118** | **$902** | **88%** |
 
-The most impactful optimizations (Phase 1-2) provide 97% of the total savings potential, making them ideal targets for the workflow demonstration.
+The Phase 5 complete infrastructure provides the full inefficient baseline for comprehensive optimization analysis and demonstration.
 
 ## 🔍 Success Metrics
 
 The demo is considered successful if:
 
 ### Workflow Metrics
-- **Coverage**: 90%+ of inefficient resources identified
+- **Coverage**: 90%+ of inefficient resources identified (13+ opportunities)
 - **Accuracy**: Azure CLI commands execute without errors
 - **Completeness**: GitHub issue contains all required sections
 - **Actionability**: Recommendations can be implemented immediately
 
-### Cost Optimization Metrics
-- **Total Savings Identified**: $815+ monthly savings potential (90% reduction)
+### Cost Optimization Metrics (Phase 5)
+- **Total Savings Identified**: $902+ monthly savings potential (88% reduction)
 - **Implementation Success Rate**: 80%+ of recommendations successfully applied
 - **Performance Impact**: <5% performance degradation after optimization
 - **ROI**: Clear return on investment for optimization effort
-- **Demo Cost**: ~$30 for full 1-day demo run (inefficient) or ~$3 (optimized)
+- **Demo Cost**: ~$33 for full 1-day demo run (inefficient) or ~$4 (optimized)
 
 ## 🛠️ Troubleshooting
 
@@ -211,14 +231,14 @@ The demo is considered successful if:
 
 ## 📈 Metrics Collection
 
-### Daily Cost Management & Safety
+### Daily Cost Management & Safety (Phase 5)
 
 | Environment | Inefficient | Optimized | Notes |
 |-------------|-------------|-----------|-------|
-| **Production** | $30/day | $3/day | Core demo environment |
-| **Development** | $7/day | $1/day | Can be shut down when not demoing |
-| **Staging** | $2/day | $0.50/day | On-demand only |
-| **Total Maximum** | **$39/day** | **$4.50/day** | All environments running |
+| **Production** | $33/day | $4/day | Core demo environment (Phase 5 complete) |
+| **Development** | $10/day | $1.50/day | Can be shut down when not demoing |
+| **Staging** | $3/day | $0.50/day | On-demand only |
+| **Total Maximum** | **$46/day** | **$6/day** | All environments running |
 
 ### Cost Protection Strategies
 1. **⏰ Auto-cleanup**: Resources auto-delete after 24 hours
